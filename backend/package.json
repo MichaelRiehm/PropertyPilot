@@ -11,10 +11,12 @@
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "dotenv -e ../.env -- prisma migrate dev",
-    "prisma:studio": "dotenv -e ../.env -- prisma studio"
+    "prisma:studio": "dotenv -e ../.env -- prisma studio",
+    "db:seed": "dotenv -e ../.env -- ts-node prisma/seed.ts"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma"
+    "schema": "prisma/schema.prisma",
+    "seed": "dotenv -e ../.env -- ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
