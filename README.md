@@ -1,29 +1,104 @@
 <strong>**DO NOT DISTRIBUTE OR PUBLICLY POST SOLUTIONS TO THESE LABS. MAKE ALL FORKS OF THIS REPOSITORY WITH SOLUTION CODE PRIVATE. PLEASE REFER TO THE STUDENT CODE OF CONDUCT AND ETHICAL EXPECTATIONS FOR COLLEGE OF INFORMATION TECHNOLOGY STUDENTS FOR SPECIFICS. **</strong>
 
-# WESTERN GOVERNORS UNIVERSITY 
-## D424 – SOFTWARE ENGINEERING CAPSTONE
-Welcome to Software Engineering Capstone! This is an opportunity for students to develop full stack software engineering documentation and applications. They will execute documentation, unit testing, revision of software applications, and deploy software applications with scripts and containers on a cloud platform.
+# PropertyPilot
 
-FOR SPECIFIC TASK INSTRUCTIONS AND REQUIREMENTS FOR THIS ASSESSMENT, PLEASE REFER TO THE COURSE PAGE.
-BASIC INSTRUCTIONS
-For this assessment, you will deploy your developed full stack software product to a web service of your choice.
+A full-stack property management web application for small residential landlords (1–10 units). Tracks properties, units, tenants, leases, rent transactions, maintenance requests, and a 12-month cash flow forecast.
 
+Built as the WGU **D424 Software Engineering Capstone** project by Michael Riehm.
 
-## SUPPLEMENTAL RESOURCES  
-1.	How to clone a project to IntelliJ using Git?
+## Stack
 
-> Ensure that you have Git installed on your system and that IntelliJ is installed using [Toolbox](https://www.jetbrains.com/toolbox-app/). Make sure that you are using version 2022.3.2. Once this has been confirmed, click the clone button and use the 'IntelliJ IDEA (HTTPS)' button. This will open IntelliJ with a prompt to clone the proejct. Save it in a safe location for the directory and press clone. IntelliJ will prompt you for your credentials. Enter in your WGU Credentials and the project will be cloned onto your local machine.  
+- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + React Router + React Hook Form + Zod
+- **Backend:** Node.js 20 + Express + TypeScript + Prisma + Zod + bcrypt + JWT
+- **Database:** PostgreSQL 16 (Docker locally, managed Postgres in production)
+- **Testing:** Vitest
+- **Containerization:** Docker + docker-compose
 
-2. How to create a branch and start Development?
+## Repository Layout
 
-- GitLab method
-> Press the '+' button located near your branch name. In the dropdown list, press the 'New branch' button. This will allow you to create a name for your branch. Once the branch has been named, you can select 'Create Branch' to push the branch to your repository.
+```
+/
+├── backend/      # Express API, Prisma schema, domain layer
+├── frontend/     # Vite + React app
+├── docker-compose.yml
+├── package.json  # npm workspace root
+└── README.md
+```
 
-- IntelliJ method
-> In IntelliJ, Go to the 'Git' button on the top toolbar. Select the new branch option and create a name for the branch. Make sure checkout branch is selected and press create. You can now add a commit message and push the new branch to the local repo.
+## Prerequisites
 
-## SUPPORT
-If you need additional support, please navigate to the course page and reach out to your course instructor.
+- **Node.js 20+** and **npm 10+** — https://nodejs.org/
+- **Docker Desktop** (running) — https://www.docker.com/products/docker-desktop/
+- **Git**
 
-## FUTURE USE
-Take this opportunity to create or add to a simple resume portfolio to highlight and showcase your work for future use in career search, experience, and education!
+Verify:
+
+```powershell
+node --version
+npm --version
+docker --version
+docker compose version
+```
+
+## Setup
+
+### 1. Clone
+
+```powershell
+git clone https://gitlab.com/wgu-gitlab-environment/student-repos/mriehm1/d424-software-engineering-capstone.git propertypilot
+cd propertypilot
+```
+
+### 2. Configure environment
+
+```powershell
+Copy-Item .env.example .env
+```
+
+The default values in `.env.example` match the Docker Compose Postgres settings, so the file works out of the box for local development. Update `JWT_SECRET` to anything other than the placeholder before deploying.
+
+### 3. Start PostgreSQL
+
+```powershell
+docker compose up -d
+```
+
+This starts a single `postgres:16-alpine` container exposed on `localhost:5432` with database `propertypilot`. Data persists in a named Docker volume (`propertypilot_pgdata`).
+
+### 4. Install dependencies
+
+```powershell
+npm install
+```
+
+This installs root, backend, and frontend dependencies via npm workspaces.
+
+### 5. Run the initial Prisma migration
+
+```powershell
+npm run prisma:migrate -w backend
+```
+
+### 6. Start the dev servers
+
+```powershell
+npm run dev
+```
+
+This launches both servers in parallel:
+
+- Backend API: http://localhost:4000 (health check at `/api/health`)
+- Frontend: http://localhost:5173
+
+## Useful Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start backend and frontend dev servers concurrently |
+| `npm run build` | Type-check and build both workspaces |
+| `npm run test` | Run vitest in both workspaces |
+| `docker compose up -d` | Start PostgreSQL in the background |
+| `docker compose down` | Stop PostgreSQL (data persists in the named volume) |
+| `docker compose down -v` | Stop PostgreSQL **and** delete the data volume |
+| `npm run prisma:migrate -w backend` | Apply Prisma migrations to the local database |
+| `npm run prisma:studio -w backend` | Open Prisma Studio against the local database |
