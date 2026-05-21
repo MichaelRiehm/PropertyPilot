@@ -4,22 +4,32 @@ import {
   PropertyRepository,
   UnitRepository,
   TenantRepository,
+  LeaseRepository,
+  TransactionRepository,
 } from '../repositories';
 import { PropertyController } from '../controllers/propertyController';
 import { UnitController } from '../controllers/unitController';
 import { TenantController } from '../controllers/tenantController';
+import { LeaseController } from '../controllers/leaseController';
+import { TransactionController } from '../controllers/transactionController';
 import { createPropertyRouter } from './properties';
 import { createUnitRouter } from './units';
 import { createTenantRouter } from './tenants';
+import { createLeaseRouter } from './leases';
+import { createTransactionRouter } from './transactions';
 
 export function createApiRouter(prisma: PrismaClient): Router {
   const propertyRepo = new PropertyRepository(prisma);
   const unitRepo = new UnitRepository(prisma);
   const tenantRepo = new TenantRepository(prisma);
+  const leaseRepo = new LeaseRepository(prisma);
+  const transactionRepo = new TransactionRepository(prisma);
 
   const propertyController = new PropertyController(propertyRepo);
   const unitController = new UnitController(unitRepo);
   const tenantController = new TenantController(tenantRepo);
+  const leaseController = new LeaseController(leaseRepo);
+  const transactionController = new TransactionController(transactionRepo);
 
   const router = Router();
   router.get('/health', (_req, res) => {
@@ -28,5 +38,7 @@ export function createApiRouter(prisma: PrismaClient): Router {
   router.use('/properties', createPropertyRouter(propertyController));
   router.use('/units', createUnitRouter(unitController));
   router.use('/tenants', createTenantRouter(tenantController));
+  router.use('/leases', createLeaseRouter(leaseController));
+  router.use('/transactions', createTransactionRouter(transactionController));
   return router;
 }

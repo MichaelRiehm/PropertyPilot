@@ -27,3 +27,13 @@ export const propertyTypeSchema = z.enum([
   'TOWNHOUSE',
   'OTHER',
 ]);
+
+export const leaseStatusSchema = z.enum(['PENDING', 'ACTIVE', 'EXPIRED', 'TERMINATED']);
+
+export const transactionTypeSchema = z.enum([
+  'RENT_INCOME',
+  'DEPOSIT_INCOME',
+  'OTHER_INCOME',
+  'EXPENSE',
+  'REFUND',
+]);

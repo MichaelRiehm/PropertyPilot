@@ -86,6 +86,11 @@ export class Lease extends Entity implements Reportable {
     this.touch();
   }
 
+  public setStatus(status: LeaseStatus): void {
+    this._status = status;
+    this.touch();
+  }
+
   public extendTo(endDate: Date): void {
     this._endDate = endDate;
     this.touch();
