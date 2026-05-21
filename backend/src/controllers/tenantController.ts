@@ -28,7 +28,7 @@ export class TenantController {
 
   public list = async (req: Request, res: Response): Promise<void> => {
     const query = tenantListQuerySchema.parse(req.query);
-    const result = await this.repo.list(query);
+    const result = await this.repo.list({ ...query, ownerId: req.user!.id });
     res.json({
       data: result.data.map(serialize),
       total: result.total,
@@ -38,15 +38,16 @@ export class TenantController {
   };
 
   public get = async (req: Request, res: Response): Promise<void> => {
-    const tenant = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!tenant) throw new NotFoundError('Tenant', idParamSchema.parse(req.params).id);
+    const id = idParamSchema.parse(req.params).id;
+    const tenant = await this.repo.findById(id, req.user!.id);
+    if (!tenant) throw new NotFoundError('Tenant', id);
     res.json(serialize(tenant));
   };
 
   public create = async (req: Request, res: Response): Promise<void> => {
     const body = tenantCreateSchema.parse(req.body);
     const tenant = Tenant.create({
-      ownerId: body.ownerId,
+      ownerId: req.user!.id,
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,
@@ -57,9 +58,11 @@ export class TenantController {
   };
 
   public update = async (req: Request, res: Response): Promise<void> => {
+    const id = idParamSchema.parse(req.params).id;
     const body = tenantUpdateSchema.parse(req.body);
-    const tenant = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!tenant) throw new NotFoundError('Tenant', idParamSchema.parse(req.params).id);
+    const ownerId = req.user!.id;
+    const tenant = await this.repo.findById(id, ownerId);
+    if (!tenant) throw new NotFoundError('Tenant', id);
 
     if (body.firstName !== undefined || body.lastName !== undefined) {
       tenant.updateName(
@@ -74,14 +77,13 @@ export class TenantController {
       });
     }
 
-    const updated = await this.repo.update(tenant);
+    const updated = await this.repo.update(tenant, ownerId);
     res.json(serialize(updated));
   };
 
   public remove = async (req: Request, res: Response): Promise<void> => {
-    const tenant = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!tenant) throw new NotFoundError('Tenant', idParamSchema.parse(req.params).id);
-    await this.repo.delete(tenant.id);
+    const id = idParamSchema.parse(req.params).id;
+    await this.repo.delete(id, req.user!.id);
     res.status(204).send();
   };
 }

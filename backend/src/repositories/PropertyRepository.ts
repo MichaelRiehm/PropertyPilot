@@ -6,9 +6,10 @@ import {
   propertyToUpdateInput,
 } from '../domain/mappers';
 import { BaseRepository, ListOptions, PaginatedResult } from './BaseRepository';
+import { NotFoundError } from '../errors';
 
 export interface PropertyListFilter extends ListOptions {
-  ownerId?: string;
+  ownerId: string;
 }
 
 export class PropertyRepository extends BaseRepository<Property, PropertyListFilter> {
@@ -16,14 +17,14 @@ export class PropertyRepository extends BaseRepository<Property, PropertyListFil
     super(prisma);
   }
 
-  public async findById(id: string): Promise<Property | null> {
-    const row = await this.prisma.property.findUnique({ where: { id } });
+  public async findById(id: string, ownerId: string): Promise<Property | null> {
+    const row = await this.prisma.property.findFirst({ where: { id, ownerId } });
     return row ? propertyFromPrisma(row) : null;
   }
 
-  public async list(filter: PropertyListFilter = {}): Promise<PaginatedResult<Property>> {
+  public async list(filter: PropertyListFilter): Promise<PaginatedResult<Property>> {
     const { limit, offset } = this.normalizePagination(filter);
-    const where = filter.ownerId ? { ownerId: filter.ownerId } : {};
+    const where = { ownerId: filter.ownerId };
     const [rows, total] = await Promise.all([
       this.prisma.property.findMany({
         where,
@@ -42,16 +43,23 @@ export class PropertyRepository extends BaseRepository<Property, PropertyListFil
     return propertyFromPrisma(row);
   }
 
-  public async update(entity: Property): Promise<Property> {
+  public async update(entity: Property, ownerId: string): Promise<Property> {
     this.ensureValid(entity);
-    const row = await this.prisma.property.update({
-      where: { id: entity.id },
+    const result = await this.prisma.property.updateMany({
+      where: { id: entity.id, ownerId },
       data: propertyToUpdateInput(entity),
     });
+    if (result.count === 0) {
+      throw new NotFoundError('Property', entity.id);
+    }
+    const row = await this.prisma.property.findUniqueOrThrow({ where: { id: entity.id } });
     return propertyFromPrisma(row);
   }
 
-  public async delete(id: string): Promise<void> {
-    await this.prisma.property.delete({ where: { id } });
+  public async delete(id: string, ownerId: string): Promise<void> {
+    const result = await this.prisma.property.deleteMany({ where: { id, ownerId } });
+    if (result.count === 0) {
+      throw new NotFoundError('Property', id);
+    }
   }
 }

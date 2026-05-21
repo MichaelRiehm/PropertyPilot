@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { Lease } from '../domain';
-import { LeaseRepository } from '../repositories';
+import {
+  LeaseRepository,
+  TenantRepository,
+  UnitRepository,
+} from '../repositories';
 import { NotFoundError } from '../errors';
 import {
   idParamSchema,
@@ -27,11 +31,15 @@ function serialize(l: Lease) {
 }
 
 export class LeaseController {
-  public constructor(private readonly repo: LeaseRepository) {}
+  public constructor(
+    private readonly repo: LeaseRepository,
+    private readonly units: UnitRepository,
+    private readonly tenants: TenantRepository,
+  ) {}
 
   public list = async (req: Request, res: Response): Promise<void> => {
     const query = leaseListQuerySchema.parse(req.query);
-    const result = await this.repo.list(query);
+    const result = await this.repo.list({ ...query, ownerId: req.user!.id });
     res.json({
       data: result.data.map(serialize),
       total: result.total,
@@ -42,13 +50,21 @@ export class LeaseController {
 
   public get = async (req: Request, res: Response): Promise<void> => {
     const id = idParamSchema.parse(req.params).id;
-    const lease = await this.repo.findById(id);
+    const lease = await this.repo.findById(id, req.user!.id);
     if (!lease) throw new NotFoundError('Lease', id);
     res.json(serialize(lease));
   };
 
   public create = async (req: Request, res: Response): Promise<void> => {
     const body = leaseCreateSchema.parse(req.body);
+    const ownerId = req.user!.id;
+
+    // Verify both the unit and the tenant belong to this owner.
+    const unit = await this.units.findById(body.unitId, ownerId);
+    if (!unit) throw new NotFoundError('Unit', body.unitId);
+    const tenant = await this.tenants.findById(body.tenantId, ownerId);
+    if (!tenant) throw new NotFoundError('Tenant', body.tenantId);
+
     const lease = Lease.create({
       unitId: body.unitId,
       tenantId: body.tenantId,
@@ -66,7 +82,8 @@ export class LeaseController {
   public update = async (req: Request, res: Response): Promise<void> => {
     const id = idParamSchema.parse(req.params).id;
     const body = leaseUpdateSchema.parse(req.body);
-    const lease = await this.repo.findById(id);
+    const ownerId = req.user!.id;
+    const lease = await this.repo.findById(id, ownerId);
     if (!lease) throw new NotFoundError('Lease', id);
 
     if (body.endDate !== undefined) lease.extendTo(body.endDate);
@@ -79,15 +96,13 @@ export class LeaseController {
     if (body.status !== undefined) lease.setStatus(body.status);
     if (body.documentLink !== undefined) lease.attachDocument(body.documentLink);
 
-    const updated = await this.repo.update(lease);
+    const updated = await this.repo.update(lease, ownerId);
     res.json(serialize(updated));
   };
 
   public remove = async (req: Request, res: Response): Promise<void> => {
     const id = idParamSchema.parse(req.params).id;
-    const lease = await this.repo.findById(id);
-    if (!lease) throw new NotFoundError('Lease', id);
-    await this.repo.delete(lease.id);
+    await this.repo.delete(id, req.user!.id);
     res.status(204).send();
   };
 }

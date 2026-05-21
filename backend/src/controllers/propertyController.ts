@@ -31,7 +31,7 @@ export class PropertyController {
 
   public list = async (req: Request, res: Response): Promise<void> => {
     const query = propertyListQuerySchema.parse(req.query);
-    const result = await this.repo.list(query);
+    const result = await this.repo.list({ ...query, ownerId: req.user!.id });
     res.json({
       data: result.data.map(serialize),
       total: result.total,
@@ -41,15 +41,16 @@ export class PropertyController {
   };
 
   public get = async (req: Request, res: Response): Promise<void> => {
-    const property = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!property) throw new NotFoundError('Property', idParamSchema.parse(req.params).id);
+    const id = idParamSchema.parse(req.params).id;
+    const property = await this.repo.findById(id, req.user!.id);
+    if (!property) throw new NotFoundError('Property', id);
     res.json(serialize(property));
   };
 
   public create = async (req: Request, res: Response): Promise<void> => {
     const body = propertyCreateSchema.parse(req.body);
     const property = Property.create({
-      ownerId: body.ownerId,
+      ownerId: req.user!.id,
       name: body.name,
       addressLine1: body.addressLine1,
       addressLine2: body.addressLine2 ?? null,
@@ -63,9 +64,11 @@ export class PropertyController {
   };
 
   public update = async (req: Request, res: Response): Promise<void> => {
+    const id = idParamSchema.parse(req.params).id;
     const body = propertyUpdateSchema.parse(req.body);
-    const property = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!property) throw new NotFoundError('Property', idParamSchema.parse(req.params).id);
+    const ownerId = req.user!.id;
+    const property = await this.repo.findById(id, ownerId);
+    if (!property) throw new NotFoundError('Property', id);
 
     if (body.name !== undefined) property.rename(body.name);
     if (
@@ -86,14 +89,13 @@ export class PropertyController {
     }
     if (body.propertyType !== undefined) property.changeType(body.propertyType);
 
-    const updated = await this.repo.update(property);
+    const updated = await this.repo.update(property, ownerId);
     res.json(serialize(updated));
   };
 
   public remove = async (req: Request, res: Response): Promise<void> => {
-    const property = await this.repo.findById(idParamSchema.parse(req.params).id);
-    if (!property) throw new NotFoundError('Property', idParamSchema.parse(req.params).id);
-    await this.repo.delete(property.id);
+    const id = idParamSchema.parse(req.params).id;
+    await this.repo.delete(id, req.user!.id);
     res.status(204).send();
   };
 }

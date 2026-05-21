@@ -11,3 +11,4 @@ export {
   TransactionRepository,
   type TransactionListFilter,
 } from './TransactionRepository';
+export { UserRepository, type UserRecord } from './UserRepository';

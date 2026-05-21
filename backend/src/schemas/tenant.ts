@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { paginationSchema } from './common';
 
 export const tenantCreateSchema = z.object({
-  ownerId: z.string().min(1),
   firstName: z.string().min(1).max(80),
   lastName: z.string().min(1).max(80),
   email: z.string().email(),
@@ -21,9 +20,7 @@ export const tenantUpdateSchema = z
     message: 'At least one field must be provided',
   });
 
-export const tenantListQuerySchema = paginationSchema.extend({
-  ownerId: z.string().min(1).optional(),
-});
+export const tenantListQuerySchema = paginationSchema;
 
 export type TenantCreateBody = z.infer<typeof tenantCreateSchema>;
 export type TenantUpdateBody = z.infer<typeof tenantUpdateSchema>;

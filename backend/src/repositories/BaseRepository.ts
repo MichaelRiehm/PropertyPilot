@@ -20,11 +20,11 @@ export abstract class BaseRepository<T extends Entity, F extends ListOptions = L
     this.prisma = prisma;
   }
 
-  public abstract findById(id: string): Promise<T | null>;
-  public abstract list(filter?: F): Promise<PaginatedResult<T>>;
+  public abstract findById(id: string, ownerId: string): Promise<T | null>;
+  public abstract list(filter: F): Promise<PaginatedResult<T>>;
   public abstract create(entity: T): Promise<T>;
-  public abstract update(entity: T): Promise<T>;
-  public abstract delete(id: string): Promise<void>;
+  public abstract update(entity: T, ownerId: string): Promise<T>;
+  public abstract delete(id: string, ownerId: string): Promise<void>;
 
   protected ensureValid(entity: T): void {
     const result = entity.validate();

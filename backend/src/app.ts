@@ -8,10 +8,16 @@ import { prisma } from './prisma';
 import { createApiRouter } from './routes';
 import { errorHandler } from './middleware/errorHandler';
 
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  console.error('[propertypilot-backend] JWT_SECRET is required but was not set');
+  process.exit(1);
+}
+
 const app = express();
 
 app.use(express.json());
-app.use('/api', createApiRouter(prisma));
+app.use('/api', createApiRouter(prisma, jwtSecret));
 app.use(errorHandler);
 
 const port = Number(process.env.PORT) || 4000;
