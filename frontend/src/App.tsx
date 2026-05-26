@@ -11,6 +11,7 @@ import LeasesPage from './pages/LeasesPage';
 import TransactionsPage from './pages/TransactionsPage';
 import ReportsPage from './pages/ReportsPage';
 import ForecastPage from './pages/ForecastPage';
+import SearchPage from './pages/SearchPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/forecast" element={<ForecastPage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Route>
       </Route>
 

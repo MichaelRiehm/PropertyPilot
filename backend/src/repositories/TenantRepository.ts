@@ -62,4 +62,22 @@ export class TenantRepository extends BaseRepository<Tenant, TenantListFilter> {
       throw new NotFoundError('Tenant', id);
     }
   }
+
+  public async search(query: string, ownerId: string, take = 25): Promise<Tenant[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const rows = await this.prisma.tenant.findMany({
+      where: {
+        ownerId,
+        OR: [
+          { firstName: { contains: q, mode: 'insensitive' } },
+          { lastName: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      take,
+    });
+    return rows.map(tenantFromPrisma);
+  }
 }

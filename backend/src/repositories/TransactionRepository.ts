@@ -90,4 +90,18 @@ export class TransactionRepository extends BaseRepository<Transaction, Transacti
       throw new NotFoundError('Transaction', id);
     }
   }
+
+  public async search(query: string, ownerId: string, take = 25): Promise<Transaction[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const rows = await this.prisma.transaction.findMany({
+      where: {
+        property: { ownerId },
+        description: { contains: q, mode: 'insensitive' },
+      },
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+      take,
+    });
+    return rows.map(transactionFromPrisma);
+  }
 }

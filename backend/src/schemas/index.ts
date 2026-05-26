@@ -5,3 +5,4 @@ export * from './tenant';
 export * from './lease';
 export * from './transaction';
 export * from './auth';
+export * from './search';

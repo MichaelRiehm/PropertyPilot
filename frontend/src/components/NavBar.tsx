@@ -11,6 +11,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import SearchBar from './SearchBar';
 
 interface NavItem {
   to: string;
@@ -40,15 +41,33 @@ export default function NavBar() {
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-6 py-3">
-        <NavLink
-          to="/dashboard"
-          aria-label="Go to dashboard"
-          className="text-lg font-bold text-slate-900 tracking-tight hover:text-slate-700"
-        >
-          PropertyPilot
-        </NavLink>
-        <nav className="flex flex-1 flex-wrap items-center gap-1">
+      <div className="mx-auto max-w-7xl px-6 py-3">
+        <div className="flex flex-wrap items-center gap-4">
+          <NavLink
+            to="/dashboard"
+            aria-label="Go to dashboard"
+            className="text-lg font-bold text-slate-900 tracking-tight hover:text-slate-700"
+          >
+            PropertyPilot
+          </NavLink>
+          <div className="flex-1 min-w-[240px]">
+            <SearchBar />
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            {user && (
+              <span className="hidden text-slate-500 md:inline">{user.email}</span>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              <span>Log out</span>
+            </button>
+          </div>
+        </div>
+        <nav className="mt-3 flex flex-wrap items-center gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -66,17 +85,6 @@ export default function NavBar() {
             </NavLink>
           ))}
         </nav>
-        <div className="flex items-center gap-3 text-sm">
-          {user && <span className="hidden text-slate-500 md:inline">{user.email}</span>}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            <span>Log out</span>
-          </button>
-        </div>
       </div>
     </header>
   );

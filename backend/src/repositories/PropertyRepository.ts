@@ -62,4 +62,22 @@ export class PropertyRepository extends BaseRepository<Property, PropertyListFil
       throw new NotFoundError('Property', id);
     }
   }
+
+  public async search(query: string, ownerId: string, take = 25): Promise<Property[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const rows = await this.prisma.property.findMany({
+      where: {
+        ownerId,
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { addressLine1: { contains: q, mode: 'insensitive' } },
+          { city: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { name: 'asc' },
+      take,
+    });
+    return rows.map(propertyFromPrisma);
+  }
 }
