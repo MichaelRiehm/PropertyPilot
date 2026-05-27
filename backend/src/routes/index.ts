@@ -7,6 +7,7 @@ import {
   LeaseRepository,
   TransactionRepository,
   UserRepository,
+  MaintenanceTicketRepository,
 } from '../repositories';
 import { PropertyController } from '../controllers/propertyController';
 import { UnitController } from '../controllers/unitController';
@@ -34,6 +35,7 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   const leaseRepo = new LeaseRepository(prisma);
   const transactionRepo = new TransactionRepository(prisma);
   const userRepo = new UserRepository(prisma);
+  const maintenanceTicketRepo = new MaintenanceTicketRepository(prisma);
 
   const authService = new AuthService(jwtSecret);
   const authMiddleware = createAuthMiddleware(authService);
@@ -56,6 +58,7 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
     tenantRepo,
     leaseRepo,
     transactionRepo,
+    maintenanceTicketRepo,
   );
 
   const router = Router();

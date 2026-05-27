@@ -3,6 +3,8 @@ import { BarChart3, Download, RefreshCw } from 'lucide-react';
 import { useApiQuery } from '../lib/useApi';
 import { listProperties } from '../lib/properties';
 import {
+  fetchMaintenanceAging,
+  fetchOccupancy,
   fetchPnL,
   fetchRentRoll,
   type Report,
@@ -10,7 +12,7 @@ import {
   type ReportColumn,
 } from '../lib/reports';
 
-type TabKey = 'rent-roll' | 'pnl';
+type TabKey = 'rent-roll' | 'pnl' | 'occupancy' | 'maintenance-aging';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -81,18 +83,29 @@ export default function ReportsPage() {
       </div>
 
       <div className="border-b border-slate-200">
-        <nav className="-mb-px flex gap-6">
+        <nav className="-mb-px flex flex-wrap gap-6">
           <TabButton active={tab === 'rent-roll'} onClick={() => setTab('rent-roll')}>
             Rent Roll
           </TabButton>
           <TabButton active={tab === 'pnl'} onClick={() => setTab('pnl')}>
             Profit &amp; Loss (YTD)
           </TabButton>
+          <TabButton active={tab === 'occupancy'} onClick={() => setTab('occupancy')}>
+            Occupancy
+          </TabButton>
+          <TabButton
+            active={tab === 'maintenance-aging'}
+            onClick={() => setTab('maintenance-aging')}
+          >
+            Maintenance Aging
+          </TabButton>
         </nav>
       </div>
 
       {tab === 'rent-roll' && <RentRollTab />}
       {tab === 'pnl' && <PnLTab />}
+      {tab === 'occupancy' && <OccupancyTab />}
+      {tab === 'maintenance-aging' && <MaintenanceAgingTab />}
     </div>
   );
 }
@@ -150,6 +163,52 @@ function PnLTab() {
 
   const reportFetcher = useCallback(
     () => fetchPnL(propertyId ? { propertyId } : {}),
+    [propertyId],
+  );
+  const reportQuery = useApiQuery(reportFetcher, [propertyId]);
+
+  return (
+    <ReportView
+      report={reportQuery.data}
+      loading={reportQuery.loading}
+      error={reportQuery.error}
+      onRefresh={() => void reportQuery.refresh()}
+      properties={propertiesQuery.data?.data ?? []}
+      propertyId={propertyId}
+      onPropertyChange={setPropertyId}
+    />
+  );
+}
+
+function OccupancyTab() {
+  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  const reportFetcher = useCallback(
+    () => fetchOccupancy(propertyId ? { propertyId } : {}),
+    [propertyId],
+  );
+  const reportQuery = useApiQuery(reportFetcher, [propertyId]);
+
+  return (
+    <ReportView
+      report={reportQuery.data}
+      loading={reportQuery.loading}
+      error={reportQuery.error}
+      onRefresh={() => void reportQuery.refresh()}
+      properties={propertiesQuery.data?.data ?? []}
+      propertyId={propertyId}
+      onPropertyChange={setPropertyId}
+    />
+  );
+}
+
+function MaintenanceAgingTab() {
+  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  const reportFetcher = useCallback(
+    () => fetchMaintenanceAging(propertyId ? { propertyId } : {}),
     [propertyId],
   );
   const reportQuery = useApiQuery(reportFetcher, [propertyId]);

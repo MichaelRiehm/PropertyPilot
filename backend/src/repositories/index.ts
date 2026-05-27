@@ -12,3 +12,7 @@ export {
   type TransactionListFilter,
 } from './TransactionRepository';
 export { UserRepository, type UserRecord } from './UserRepository';
+export {
+  MaintenanceTicketRepository,
+  type MaintenanceTicketListFilter,
+} from './MaintenanceTicketRepository';
