@@ -7,3 +7,4 @@ export * from './transaction';
 export * from './auth';
 export * from './search';
 export * from './reports';
+export * from './forecast';
