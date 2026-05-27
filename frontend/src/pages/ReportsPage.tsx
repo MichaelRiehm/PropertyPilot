@@ -1,12 +1,325 @@
-import { BarChart3 } from 'lucide-react';
-import PagePlaceholder from '../components/PagePlaceholder';
+import { useCallback, useState } from 'react';
+import { BarChart3, Download, RefreshCw } from 'lucide-react';
+import { useApiQuery } from '../lib/useApi';
+import { listProperties } from '../lib/properties';
+import {
+  fetchPnL,
+  fetchRentRoll,
+  type Report,
+  type ReportCellValue,
+  type ReportColumn,
+} from '../lib/reports';
+
+type TabKey = 'rent-roll' | 'pnl';
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function renderCell(value: ReportCellValue | undefined, format?: ReportColumn['format']): string {
+  if (value === null || value === undefined || value === '') return '';
+  if (format === 'currency' && typeof value === 'number') {
+    return currencyFormatter.format(value);
+  }
+  if (format === 'date' && typeof value === 'string') {
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString();
+  }
+  return String(value);
+}
+
+function csvEscape(value: string): string {
+  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+}
+
+function downloadReportCsv(report: Report): void {
+  const lines: string[] = [];
+  lines.push(report.columns.map((c) => csvEscape(c.label)).join(','));
+  for (const row of report.rows) {
+    lines.push(
+      report.columns
+        .map((c) => {
+          const raw = row[c.key];
+          if (raw === null || raw === undefined) return '';
+          return csvEscape(String(raw));
+        })
+        .join(','),
+    );
+  }
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const filename = `${report.title.replace(/\s+/g, '-').toLowerCase()}-${report.generatedAt.slice(
+    0,
+    10,
+  )}.csv`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 export default function ReportsPage() {
+  const [tab, setTab] = useState<TabKey>('rent-roll');
+
   return (
-    <PagePlaceholder
-      title="Reports"
-      description="Rent roll, P&L, occupancy, and maintenance aging reports arrive with Task 3.B.4."
-      icon={BarChart3}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-slate-900">Reports</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Standard reports across your portfolio.
+        </p>
+      </div>
+
+      <div className="border-b border-slate-200">
+        <nav className="-mb-px flex gap-6">
+          <TabButton active={tab === 'rent-roll'} onClick={() => setTab('rent-roll')}>
+            Rent Roll
+          </TabButton>
+          <TabButton active={tab === 'pnl'} onClick={() => setTab('pnl')}>
+            Profit &amp; Loss (YTD)
+          </TabButton>
+        </nav>
+      </div>
+
+      {tab === 'rent-roll' && <RentRollTab />}
+      {tab === 'pnl' && <PnLTab />}
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`border-b-2 px-1 py-2 text-sm font-medium transition-colors ${
+        active
+          ? 'border-slate-900 text-slate-900'
+          : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function RentRollTab() {
+  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  const reportFetcher = useCallback(
+    () => fetchRentRoll(propertyId ? { propertyId } : {}),
+    [propertyId],
+  );
+  const reportQuery = useApiQuery(reportFetcher, [propertyId]);
+
+  return (
+    <ReportView
+      report={reportQuery.data}
+      loading={reportQuery.loading}
+      error={reportQuery.error}
+      onRefresh={() => void reportQuery.refresh()}
+      properties={propertiesQuery.data?.data ?? []}
+      propertyId={propertyId}
+      onPropertyChange={setPropertyId}
     />
+  );
+}
+
+function PnLTab() {
+  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const [propertyId, setPropertyId] = useState<string>('');
+
+  const reportFetcher = useCallback(
+    () => fetchPnL(propertyId ? { propertyId } : {}),
+    [propertyId],
+  );
+  const reportQuery = useApiQuery(reportFetcher, [propertyId]);
+
+  return (
+    <ReportView
+      report={reportQuery.data}
+      loading={reportQuery.loading}
+      error={reportQuery.error}
+      onRefresh={() => void reportQuery.refresh()}
+      properties={propertiesQuery.data?.data ?? []}
+      propertyId={propertyId}
+      onPropertyChange={setPropertyId}
+    />
+  );
+}
+
+interface ReportViewProps {
+  report: Report | null;
+  loading: boolean;
+  error: Error | null;
+  onRefresh: () => void;
+  properties: { id: string; name: string }[];
+  propertyId: string;
+  onPropertyChange: (value: string) => void;
+}
+
+function ReportView({
+  report,
+  loading,
+  error,
+  onRefresh,
+  properties,
+  propertyId,
+  onPropertyChange,
+}: ReportViewProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {properties.length > 0 && (
+            <div>
+              <label
+                htmlFor="report-property"
+                className="block text-xs font-medium uppercase tracking-wide text-slate-500"
+              >
+                Property
+              </label>
+              <select
+                id="report-property"
+                value={propertyId}
+                onChange={(e) => onPropertyChange(e.target.value)}
+                className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              >
+                <option value="">All properties</option>
+                {properties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            Refresh
+          </button>
+          <button
+            type="button"
+            onClick={() => report && downloadReportCsv(report)}
+            disabled={!report || report.rows.length === 0}
+            className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+          Generating report...
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+          <p className="text-sm font-medium text-red-800">Could not generate report.</p>
+          <p className="mt-1 text-sm text-red-700">{error.message}</p>
+          <button
+            type="button"
+            onClick={onRefresh}
+            className="mt-3 rounded-md border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {report && !loading && !error && (
+        <div className="space-y-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-4">
+            <h2 className="text-lg font-semibold text-slate-900">{report.title}</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Generated {new Date(report.generatedAt).toLocaleString()}
+            </p>
+          </div>
+
+          {report.rows.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                <BarChart3 className="h-6 w-6 text-slate-500" aria-hidden="true" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900">No data</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Nothing to report for the selected filters.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    {report.columns.map((c) => (
+                      <th
+                        key={c.key}
+                        scope="col"
+                        className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
+                          c.align === 'right' ? 'text-right' : 'text-left'
+                        }`}
+                      >
+                        {c.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {report.rows.map((row, i) => {
+                    const isTotal = row.period === 'Total';
+                    return (
+                      <tr
+                        key={i}
+                        className={isTotal ? 'bg-slate-50 font-medium' : undefined}
+                      >
+                        {report.columns.map((c) => (
+                          <td
+                            key={c.key}
+                            className={`whitespace-nowrap px-4 py-3 text-sm text-slate-700 ${
+                              c.align === 'right' ? 'text-right' : ''
+                            }`}
+                          >
+                            {renderCell(row[c.key], c.format)}
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

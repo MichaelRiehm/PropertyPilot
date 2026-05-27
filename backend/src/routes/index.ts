@@ -15,6 +15,7 @@ import { LeaseController } from '../controllers/leaseController';
 import { TransactionController } from '../controllers/transactionController';
 import { AuthController } from '../controllers/authController';
 import { SearchController } from '../controllers/searchController';
+import { ReportsController } from '../controllers/reportsController';
 import { createPropertyRouter } from './properties';
 import { createUnitRouter } from './units';
 import { createTenantRouter } from './tenants';
@@ -22,6 +23,7 @@ import { createLeaseRouter } from './leases';
 import { createTransactionRouter } from './transactions';
 import { createAuthRouter } from './auth';
 import { createSearchRouter } from './search';
+import { createReportsRouter } from './reports';
 import { AuthService } from '../services/authService';
 import { createAuthMiddleware } from '../middleware/auth';
 
@@ -48,6 +50,13 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   );
   const authController = new AuthController(userRepo, authService);
   const searchController = new SearchController(propertyRepo, tenantRepo, transactionRepo);
+  const reportsController = new ReportsController(
+    propertyRepo,
+    unitRepo,
+    tenantRepo,
+    leaseRepo,
+    transactionRepo,
+  );
 
   const router = Router();
 
@@ -65,5 +74,6 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   router.use('/leases', createLeaseRouter(leaseController));
   router.use('/transactions', createTransactionRouter(transactionController));
   router.use('/search', createSearchRouter(searchController));
+  router.use('/reports', createReportsRouter(reportsController));
   return router;
 }
