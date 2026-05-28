@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { LEASE_STATUSES } from '../lib/leases';
 
-export const leaseStatusSchema = z.enum(LEASE_STATUSES);
+export const leaseStatusSchema = z.enum(LEASE_STATUSES, {
+  message: 'Pick a valid lease status',
+});
 
 export const leaseFormSchema = z
   .object({
@@ -10,15 +12,15 @@ export const leaseFormSchema = z
     startDate: z.string().min(1, 'Start date is required'),
     endDate: z.string().min(1, 'End date is required'),
     monthlyRent: z
-      .number({ message: 'Rent must be a number' })
-      .positive('Rent must be greater than zero'),
+      .number({ message: 'Monthly rent must be a number' })
+      .positive('Monthly rent must be greater than zero'),
     securityDeposit: z
-      .number({ message: 'Deposit must be a number' })
-      .min(0, 'Deposit cannot be negative'),
+      .number({ message: 'Security deposit must be a number' })
+      .min(0, 'Security deposit cannot be negative'),
     status: leaseStatusSchema,
     documentLink: z
       .string()
-      .max(2048)
+      .max(2048, 'Document link is too long')
       .refine(
         (value) => {
           if (value === '') return true;
@@ -29,7 +31,7 @@ export const leaseFormSchema = z
             return false;
           }
         },
-        { message: 'Must be a valid URL' },
+        { message: 'Enter a valid URL' },
       )
       .nullable(),
   })

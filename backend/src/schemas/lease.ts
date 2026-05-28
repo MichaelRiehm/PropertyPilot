@@ -3,36 +3,52 @@ import { leaseStatusSchema, paginationSchema } from './common';
 
 export const leaseCreateSchema = z
   .object({
-    unitId: z.string().min(1),
-    tenantId: z.string().min(1),
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date(),
-    monthlyRent: z.number().positive(),
-    securityDeposit: z.number().min(0).default(0),
+    unitId: z.string().min(1, 'Unit is required'),
+    tenantId: z.string().min(1, 'Tenant is required'),
+    startDate: z.coerce.date({ message: 'Start date is invalid' }),
+    endDate: z.coerce.date({ message: 'End date is invalid' }),
+    monthlyRent: z
+      .number({ message: 'Monthly rent must be a number' })
+      .positive('Monthly rent must be greater than zero'),
+    securityDeposit: z
+      .number({ message: 'Security deposit must be a number' })
+      .min(0, 'Security deposit cannot be negative')
+      .default(0),
     status: leaseStatusSchema.optional(),
-    documentLink: z.string().url().nullable().optional(),
+    documentLink: z
+      .string()
+      .url('Document link must be a valid URL')
+      .nullable()
+      .optional(),
   })
   .refine((value) => value.startDate < value.endDate, {
-    message: 'startDate must be before endDate',
+    message: 'Start date must be before end date',
     path: ['endDate'],
   });
 
 export const leaseUpdateSchema = z
   .object({
-    endDate: z.coerce.date(),
-    monthlyRent: z.number().positive(),
-    securityDeposit: z.number().min(0),
+    endDate: z.coerce.date({ message: 'End date is invalid' }),
+    monthlyRent: z
+      .number({ message: 'Monthly rent must be a number' })
+      .positive('Monthly rent must be greater than zero'),
+    securityDeposit: z
+      .number({ message: 'Security deposit must be a number' })
+      .min(0, 'Security deposit cannot be negative'),
     status: leaseStatusSchema,
-    documentLink: z.string().url().nullable(),
+    documentLink: z
+      .string()
+      .url('Document link must be a valid URL')
+      .nullable(),
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'At least one field must be provided',
+    message: 'Provide at least one field to update',
   });
 
 export const leaseListQuerySchema = paginationSchema.extend({
-  unitId: z.string().min(1).optional(),
-  tenantId: z.string().min(1).optional(),
+  unitId: z.string().min(1, 'Unit id cannot be empty').optional(),
+  tenantId: z.string().min(1, 'Tenant id cannot be empty').optional(),
   status: leaseStatusSchema.optional(),
 });
 

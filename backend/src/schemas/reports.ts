@@ -1,24 +1,32 @@
 import { z } from 'zod';
 
+const optionalPropertyId = z
+  .string()
+  .min(1, 'Property id cannot be empty')
+  .optional();
+
+const optionalDate = (field: string) =>
+  z.coerce.date({ message: `${field} is invalid` }).optional();
+
 export const rentRollQuerySchema = z.object({
-  propertyId: z.string().min(1).optional(),
-  asOf: z.coerce.date().optional(),
+  propertyId: optionalPropertyId,
+  asOf: optionalDate('asOf'),
 });
 
 export const pnlQuerySchema = z.object({
-  propertyId: z.string().min(1).optional(),
-  dateFrom: z.coerce.date().optional(),
-  dateTo: z.coerce.date().optional(),
+  propertyId: optionalPropertyId,
+  dateFrom: optionalDate('dateFrom'),
+  dateTo: optionalDate('dateTo'),
 });
 
 export const occupancyQuerySchema = z.object({
-  propertyId: z.string().min(1).optional(),
-  asOf: z.coerce.date().optional(),
+  propertyId: optionalPropertyId,
+  asOf: optionalDate('asOf'),
 });
 
 export const maintenanceAgingQuerySchema = z.object({
-  propertyId: z.string().min(1).optional(),
-  asOf: z.coerce.date().optional(),
+  propertyId: optionalPropertyId,
+  asOf: optionalDate('asOf'),
 });
 
 export type RentRollQuery = z.infer<typeof rentRollQuerySchema>;

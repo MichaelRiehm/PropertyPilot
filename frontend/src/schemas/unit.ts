@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 export const unitFormSchema = z.object({
   propertyId: z.string().min(1, 'Property is required'),
-  label: z.string().min(1, 'Label is required').max(60),
+  label: z
+    .string()
+    .min(1, 'Label is required')
+    .max(60, 'Label must be 60 characters or fewer'),
   bedrooms: z
     .number({ message: 'Bedrooms must be a number' })
     .int('Bedrooms must be a whole number')
