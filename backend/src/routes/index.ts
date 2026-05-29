@@ -18,6 +18,7 @@ import { AuthController } from '../controllers/authController';
 import { SearchController } from '../controllers/searchController';
 import { ReportsController } from '../controllers/reportsController';
 import { ForecastController } from '../controllers/forecastController';
+import { DashboardController } from '../controllers/dashboardController';
 import { createPropertyRouter } from './properties';
 import { createUnitRouter } from './units';
 import { createTenantRouter } from './tenants';
@@ -27,6 +28,7 @@ import { createAuthRouter } from './auth';
 import { createSearchRouter } from './search';
 import { createReportsRouter } from './reports';
 import { createForecastRouter } from './forecast';
+import { createDashboardRouter } from './dashboard';
 import { AuthService } from '../services/authService';
 import { createAuthMiddleware } from '../middleware/auth';
 
@@ -68,6 +70,13 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
     leaseRepo,
     transactionRepo,
   );
+  const dashboardController = new DashboardController(
+    propertyRepo,
+    unitRepo,
+    leaseRepo,
+    transactionRepo,
+    maintenanceTicketRepo,
+  );
 
   const router = Router();
 
@@ -87,5 +96,6 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   router.use('/search', createSearchRouter(searchController));
   router.use('/reports', createReportsRouter(reportsController));
   router.use('/forecast', createForecastRouter(forecastController));
+  router.use('/dashboard', createDashboardRouter(dashboardController));
   return router;
 }
