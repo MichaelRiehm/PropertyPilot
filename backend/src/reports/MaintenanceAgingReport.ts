@@ -54,11 +54,11 @@ export class MaintenanceAgingReport extends Report {
         ownerId,
         propertyId,
         openOnly: true,
-        limit: 200,
-        offset: 0,
+        page: 1,
+        pageSize: 200,
       }),
-      this.properties.list({ ownerId, limit: 200, offset: 0 }),
-      this.units.list({ ownerId, limit: 200, offset: 0 }),
+      this.properties.list({ ownerId, page: 1, pageSize: 200 }),
+      this.units.list({ ownerId, page: 1, pageSize: 200 }),
     ]);
 
     const propertyById = new Map(propertiesResult.data.map((p) => [p.id, p]));

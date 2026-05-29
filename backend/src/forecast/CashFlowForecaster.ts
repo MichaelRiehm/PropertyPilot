@@ -70,8 +70,8 @@ export class CashFlowForecaster {
     }
 
     const [unitsResult, leasesResult, expensesResult] = await Promise.all([
-      this.units.list({ ownerId, propertyId, limit: 200, offset: 0 }),
-      this.leases.list({ ownerId, status: 'ACTIVE', limit: 200, offset: 0 }),
+      this.units.list({ ownerId, propertyId, page: 1, pageSize: 200 }),
+      this.leases.list({ ownerId, status: 'ACTIVE', page: 1, pageSize: 200 }),
       this.loadTrailingExpenses(ownerId, propertyId, trailingMonths),
     ]);
 
@@ -128,8 +128,8 @@ export class CashFlowForecaster {
       type: 'EXPENSE',
       dateFrom,
       dateTo,
-      limit: 500,
-      offset: 0,
+      page: 1,
+      pageSize: 500,
     });
     return result.data;
   }

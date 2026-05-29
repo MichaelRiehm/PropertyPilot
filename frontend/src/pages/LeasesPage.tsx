@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FileText, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useApiQuery } from '../lib/useApi';
 import { listProperties, type Property } from '../lib/properties';
@@ -12,8 +12,10 @@ import {
   type Lease,
   type LeaseStatus,
 } from '../lib/leases';
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import LeaseFormModal from '../components/LeaseFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Pagination from '../components/Pagination';
 
 type FormState =
   | { kind: 'closed' }
@@ -34,10 +36,16 @@ const STATUS_STYLES: Record<LeaseStatus, string> = {
 };
 
 export default function LeasesPage() {
-  const leasesQuery = useApiQuery(() => listLeases(), []);
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
-  const unitsQuery = useApiQuery(() => listUnits(), []);
-  const tenantsQuery = useApiQuery(() => listTenants(), []);
+  const [page, setPage] = useState(1);
+  const pageSize = DEFAULT_PAGE_SIZE;
+  const leasesFetcher = useCallback(() => listLeases({ page, pageSize }), [page, pageSize]);
+  const leasesQuery = useApiQuery(leasesFetcher, [page, pageSize]);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
+  const unitsQuery = useApiQuery(() => listUnits({ page: 1, pageSize: 200 }), []);
+  const tenantsQuery = useApiQuery(() => listTenants({ page: 1, pageSize: 200 }), []);
 
   const [form, setForm] = useState<FormState>({ kind: 'closed' });
   const [deleteTarget, setDeleteTarget] = useState<Lease | null>(null);
@@ -85,7 +93,11 @@ export default function LeasesPage() {
     if (!deleteTarget) return;
     await deleteLease(deleteTarget.id);
     setDeleteTarget(null);
-    void leasesQuery.refresh();
+    if (leases.length === 1 && page > 1) {
+      setPage(page - 1);
+    } else {
+      void leasesQuery.refresh();
+    }
   }
 
   function refreshAll(): void {
@@ -167,7 +179,8 @@ export default function LeasesPage() {
         </div>
       )}
 
-      {!loading && !error && leases.length > 0 && (
+      {!loading && !error && leases.length > 0 && leasesQuery.data && (
+        <>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -247,6 +260,14 @@ export default function LeasesPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={leasesQuery.data.page}
+          pageSize={leasesQuery.data.pageSize}
+          total={leasesQuery.data.total}
+          totalPages={leasesQuery.data.totalPages}
+          onPageChange={setPage}
+        />
+        </>
       )}
 
       {form.kind !== 'closed' && (

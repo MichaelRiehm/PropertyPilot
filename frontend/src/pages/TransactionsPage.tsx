@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pencil, Plus, Receipt, Trash2 } from 'lucide-react';
 import { useApiQuery } from '../lib/useApi';
 import { listProperties, type Property } from '../lib/properties';
@@ -13,8 +13,10 @@ import {
   type Transaction,
   type TransactionType,
 } from '../lib/transactions';
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import TransactionFormModal from '../components/TransactionFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Pagination from '../components/Pagination';
 
 type FormState =
   | { kind: 'closed' }
@@ -37,15 +39,34 @@ const TYPE_STYLES: Record<TransactionType, string> = {
 };
 
 export default function TransactionsPage() {
-  const transactionsQuery = useApiQuery(() => listTransactions(), []);
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
-  const unitsQuery = useApiQuery(() => listUnits(), []);
-  const leasesQuery = useApiQuery(() => listLeases(), []);
-  const tenantsQuery = useApiQuery(() => listTenants(), []);
+  const [page, setPage] = useState(1);
+  const pageSize = DEFAULT_PAGE_SIZE;
+  const [filterPropertyId, setFilterPropertyId] = useState<string>('all');
+
+  const transactionsFetcher = useCallback(
+    () =>
+      listTransactions({
+        page,
+        pageSize,
+        propertyId: filterPropertyId === 'all' ? undefined : filterPropertyId,
+      }),
+    [page, pageSize, filterPropertyId],
+  );
+  const transactionsQuery = useApiQuery(transactionsFetcher, [
+    page,
+    pageSize,
+    filterPropertyId,
+  ]);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
+  const unitsQuery = useApiQuery(() => listUnits({ page: 1, pageSize: 200 }), []);
+  const leasesQuery = useApiQuery(() => listLeases({ page: 1, pageSize: 200 }), []);
+  const tenantsQuery = useApiQuery(() => listTenants({ page: 1, pageSize: 200 }), []);
 
   const [form, setForm] = useState<FormState>({ kind: 'closed' });
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
-  const [filterPropertyId, setFilterPropertyId] = useState<string>('all');
 
   const transactions = transactionsQuery.data?.data ?? [];
   const properties = propertiesQuery.data?.data ?? [];
@@ -65,10 +86,10 @@ export default function TransactionsPage() {
     return map;
   }, [units]);
 
-  const filteredTransactions = useMemo(() => {
-    if (filterPropertyId === 'all') return transactions;
-    return transactions.filter((t) => t.propertyId === filterPropertyId);
-  }, [transactions, filterPropertyId]);
+  function changeFilter(value: string): void {
+    setFilterPropertyId(value);
+    setPage(1);
+  }
 
   const loading =
     transactionsQuery.loading ||
@@ -93,7 +114,11 @@ export default function TransactionsPage() {
     if (!deleteTarget) return;
     await deleteTransaction(deleteTarget.id);
     setDeleteTarget(null);
-    void transactionsQuery.refresh();
+    if (transactions.length === 1 && page > 1) {
+      setPage(page - 1);
+    } else {
+      void transactionsQuery.refresh();
+    }
   }
 
   function refreshAll(): void {
@@ -119,7 +144,7 @@ export default function TransactionsPage() {
           {properties.length > 0 && (
             <select
               value={filterPropertyId}
-              onChange={(e) => setFilterPropertyId(e.target.value)}
+              onChange={(e) => changeFilter(e.target.value)}
               className="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
               aria-label="Filter by property"
             >
@@ -177,7 +202,7 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {!loading && !error && properties.length > 0 && filteredTransactions.length === 0 && (
+      {!loading && !error && properties.length > 0 && transactions.length === 0 && (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
             <Receipt className="h-6 w-6 text-slate-500" aria-hidden="true" />
@@ -191,7 +216,8 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {!loading && !error && filteredTransactions.length > 0 && (
+      {!loading && !error && transactions.length > 0 && transactionsQuery.data && (
+        <>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -207,7 +233,7 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {filteredTransactions.map((t) => {
+              {transactions.map((t) => {
                 const property = propertyById.get(t.propertyId);
                 const unit = t.unitId ? unitById.get(t.unitId) : null;
                 return (
@@ -273,6 +299,14 @@ export default function TransactionsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={transactionsQuery.data.page}
+          pageSize={transactionsQuery.data.pageSize}
+          total={transactionsQuery.data.total}
+          totalPages={transactionsQuery.data.totalPages}
+          onPageChange={setPage}
+        />
+        </>
       )}
 
       {form.kind !== 'closed' && (

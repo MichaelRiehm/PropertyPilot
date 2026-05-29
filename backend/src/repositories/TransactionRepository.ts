@@ -31,7 +31,7 @@ export class TransactionRepository extends BaseRepository<Transaction, Transacti
   }
 
   public async list(filter: TransactionListFilter): Promise<PaginatedResult<Transaction>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const dateFilter =
       filter.dateFrom || filter.dateTo
         ? {
@@ -53,12 +53,12 @@ export class TransactionRepository extends BaseRepository<Transaction, Transacti
       this.prisma.transaction.findMany({
         where,
         orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.transaction.count({ where }),
     ]);
-    return { data: rows.map(transactionFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(transactionFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: Transaction): Promise<Transaction> {

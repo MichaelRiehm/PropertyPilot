@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export interface Unit {
   id: string;
@@ -12,11 +13,10 @@ export interface Unit {
   updatedAt: string;
 }
 
-export interface UnitListResponse {
-  data: Unit[];
-  total: number;
-  limit: number;
-  offset: number;
+export type UnitListResponse = PaginatedResponse<Unit>;
+
+export interface UnitListParams extends PaginationParams {
+  propertyId?: string;
 }
 
 export interface UnitCreateInput {
@@ -30,8 +30,12 @@ export interface UnitCreateInput {
 
 export type UnitUpdateInput = Partial<Omit<UnitCreateInput, 'propertyId'>>;
 
-export function listUnits(propertyId?: string): Promise<UnitListResponse> {
-  return api.get<UnitListResponse>('/units', propertyId ? { propertyId } : undefined);
+export function listUnits(params: UnitListParams = {}): Promise<UnitListResponse> {
+  return api.get<UnitListResponse>('/units', {
+    page: params.page,
+    pageSize: params.pageSize,
+    propertyId: params.propertyId,
+  });
 }
 
 export function createUnit(input: UnitCreateInput): Promise<Unit> {

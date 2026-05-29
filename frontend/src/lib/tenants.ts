@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export interface Tenant {
   id: string;
@@ -12,12 +13,7 @@ export interface Tenant {
   updatedAt: string;
 }
 
-export interface TenantListResponse {
-  data: Tenant[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type TenantListResponse = PaginatedResponse<Tenant>;
 
 export interface TenantCreateInput {
   firstName: string;
@@ -28,8 +24,11 @@ export interface TenantCreateInput {
 
 export type TenantUpdateInput = Partial<TenantCreateInput>;
 
-export function listTenants(): Promise<TenantListResponse> {
-  return api.get<TenantListResponse>('/tenants');
+export function listTenants(params: PaginationParams = {}): Promise<TenantListResponse> {
+  return api.get<TenantListResponse>('/tenants', {
+    page: params.page,
+    pageSize: params.pageSize,
+  });
 }
 
 export function createTenant(input: TenantCreateInput): Promise<Tenant> {

@@ -43,8 +43,9 @@ export class LeaseController {
     res.json({
       data: result.data.map(serialize),
       total: result.total,
-      limit: result.limit,
-      offset: result.offset,
+      page: result.page,
+      pageSize: result.pageSize,
+      totalPages: result.totalPages,
     });
   };
 

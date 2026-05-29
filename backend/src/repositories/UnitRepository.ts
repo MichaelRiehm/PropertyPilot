@@ -26,7 +26,7 @@ export class UnitRepository extends BaseRepository<Unit, UnitListFilter> {
   }
 
   public async list(filter: UnitListFilter): Promise<PaginatedResult<Unit>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const where = {
       property: { ownerId: filter.ownerId },
       ...(filter.propertyId ? { propertyId: filter.propertyId } : {}),
@@ -35,12 +35,12 @@ export class UnitRepository extends BaseRepository<Unit, UnitListFilter> {
       this.prisma.unit.findMany({
         where,
         orderBy: [{ propertyId: 'asc' }, { label: 'asc' }],
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.unit.count({ where }),
     ]);
-    return { data: rows.map(unitFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(unitFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: Unit): Promise<Unit> {

@@ -23,18 +23,18 @@ export class PropertyRepository extends BaseRepository<Property, PropertyListFil
   }
 
   public async list(filter: PropertyListFilter): Promise<PaginatedResult<Property>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const where = { ownerId: filter.ownerId };
     const [rows, total] = await Promise.all([
       this.prisma.property.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.property.count({ where }),
     ]);
-    return { data: rows.map(propertyFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(propertyFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: Property): Promise<Property> {

@@ -36,27 +36,27 @@ export class DashboardController {
       recentTransactions,
       ticketsResult,
     ] = await Promise.all([
-      this.properties.list({ ownerId, limit: 200, offset: 0 }),
-      this.units.list({ ownerId, limit: 200, offset: 0 }),
-      this.leases.list({ ownerId, status: 'ACTIVE', limit: 200, offset: 0 }),
+      this.properties.list({ ownerId, page: 1, pageSize: 200 }),
+      this.units.list({ ownerId, page: 1, pageSize: 200 }),
+      this.leases.list({ ownerId, status: 'ACTIVE', page: 1, pageSize: 200 }),
       this.transactions.list({
         ownerId,
         type: 'RENT_INCOME',
         dateFrom: yearStart,
         dateTo: now,
-        limit: 500,
-        offset: 0,
+        page: 1,
+        pageSize: 500,
       }),
       this.transactions.list({
         ownerId,
         type: 'EXPENSE',
         dateFrom: yearStart,
         dateTo: now,
-        limit: 500,
-        offset: 0,
+        page: 1,
+        pageSize: 500,
       }),
-      this.transactions.list({ ownerId, limit: 10, offset: 0 }),
-      this.maintenanceTickets.list({ ownerId, limit: 200, offset: 0 }),
+      this.transactions.list({ ownerId, page: 1, pageSize: 10 }),
+      this.maintenanceTickets.list({ ownerId, page: 1, pageSize: 200 }),
     ]);
 
     const occupiedUnitIds = new Set<string>();

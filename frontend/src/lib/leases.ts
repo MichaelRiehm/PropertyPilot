@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export const LEASE_STATUSES = ['PENDING', 'ACTIVE', 'EXPIRED', 'TERMINATED'] as const;
 
@@ -26,12 +27,7 @@ export interface Lease {
   updatedAt: string;
 }
 
-export interface LeaseListResponse {
-  data: Lease[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type LeaseListResponse = PaginatedResponse<Lease>;
 
 export interface LeaseCreateInput {
   unitId: string;
@@ -52,8 +48,11 @@ export interface LeaseUpdateInput {
   documentLink?: string | null;
 }
 
-export function listLeases(): Promise<LeaseListResponse> {
-  return api.get<LeaseListResponse>('/leases');
+export function listLeases(params: PaginationParams = {}): Promise<LeaseListResponse> {
+  return api.get<LeaseListResponse>('/leases', {
+    page: params.page,
+    pageSize: params.pageSize,
+  });
 }
 
 export function createLease(input: LeaseCreateInput): Promise<Lease> {

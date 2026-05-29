@@ -83,6 +83,7 @@ model Property {
   maintenanceTickets MaintenanceTicket[]
 
   @@index([ownerId])
+  @@index([ownerId, createdAt])
 }
 
 model Unit {
@@ -117,6 +118,7 @@ model Tenant {
 
   @@index([ownerId])
   @@index([email])
+  @@index([ownerId, lastName, firstName])
 }
 
 model Lease {
@@ -138,6 +140,8 @@ model Lease {
   @@index([unitId])
   @@index([tenantId])
   @@index([status])
+  @@index([startDate])
+  @@index([endDate])
 }
 
 model Transaction {
@@ -159,6 +163,9 @@ model Transaction {
   @@index([propertyId])
   @@index([date])
   @@index([type])
+  @@index([unitId])
+  @@index([leaseId])
+  @@index([propertyId, date])
 }
 
 model MaintenanceTicket {
@@ -179,4 +186,6 @@ model MaintenanceTicket {
   @@index([propertyId])
   @@index([status])
   @@index([priority])
+  @@index([reportedAt])
+  @@index([propertyId, status])
 }

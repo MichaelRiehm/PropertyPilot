@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
 export const paginationSchema = z.object({
-  limit: z.coerce
-    .number({ message: 'Limit must be a number' })
-    .int('Limit must be a whole number')
-    .min(1, 'Limit must be at least 1')
-    .max(200, 'Limit must be 200 or fewer')
+  page: z.coerce
+    .number({ message: 'Page must be a number' })
+    .int('Page must be a whole number')
+    .min(1, 'Page must be at least 1')
     .optional(),
-  offset: z.coerce
-    .number({ message: 'Offset must be a number' })
-    .int('Offset must be a whole number')
-    .min(0, 'Offset cannot be negative')
+  pageSize: z.coerce
+    .number({ message: 'Page size must be a number' })
+    .int('Page size must be a whole number')
+    .min(1, 'Page size must be at least 1')
+    .max(200, 'Page size must be 200 or fewer')
     .optional(),
 });
 

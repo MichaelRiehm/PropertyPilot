@@ -23,18 +23,18 @@ export class TenantRepository extends BaseRepository<Tenant, TenantListFilter> {
   }
 
   public async list(filter: TenantListFilter): Promise<PaginatedResult<Tenant>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const where = { ownerId: filter.ownerId };
     const [rows, total] = await Promise.all([
       this.prisma.tenant.findMany({
         where,
         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.tenant.count({ where }),
     ]);
-    return { data: rows.map(tenantFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(tenantFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: Tenant): Promise<Tenant> {

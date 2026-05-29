@@ -33,9 +33,9 @@ export class OccupancyReport extends Report {
     const asOfDate = asOf ?? new Date();
 
     const [properties, units, leases] = await Promise.all([
-      this.properties.list({ ownerId, limit: 200, offset: 0 }),
-      this.units.list({ ownerId, limit: 200, offset: 0 }),
-      this.leases.list({ ownerId, status: 'ACTIVE', limit: 200, offset: 0 }),
+      this.properties.list({ ownerId, page: 1, pageSize: 200 }),
+      this.units.list({ ownerId, page: 1, pageSize: 200 }),
+      this.leases.list({ ownerId, status: 'ACTIVE', page: 1, pageSize: 200 }),
     ]);
 
     const filteredProperties = propertyId

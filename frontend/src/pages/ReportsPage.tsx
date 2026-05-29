@@ -135,7 +135,10 @@ function TabButton({
 }
 
 function RentRollTab() {
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
   const [propertyId, setPropertyId] = useState<string>('');
 
   const reportFetcher = useCallback(
@@ -158,7 +161,10 @@ function RentRollTab() {
 }
 
 function PnLTab() {
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
   const [propertyId, setPropertyId] = useState<string>('');
 
   const reportFetcher = useCallback(
@@ -181,7 +187,10 @@ function PnLTab() {
 }
 
 function OccupancyTab() {
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
   const [propertyId, setPropertyId] = useState<string>('');
 
   const reportFetcher = useCallback(
@@ -204,7 +213,10 @@ function OccupancyTab() {
 }
 
 function MaintenanceAgingTab() {
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
   const [propertyId, setPropertyId] = useState<string>('');
 
   const reportFetcher = useCallback(

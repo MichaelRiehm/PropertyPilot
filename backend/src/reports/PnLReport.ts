@@ -33,8 +33,8 @@ export class PnLReport extends Report {
       propertyId,
       dateFrom,
       dateTo,
-      limit: 200,
-      offset: 0,
+      page: 1,
+      pageSize: 200,
     });
 
     const buckets = new Map<string, { income: number; expenses: number }>();

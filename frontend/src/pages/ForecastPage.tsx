@@ -38,7 +38,10 @@ function formatMonth(monthStr: string): string {
 }
 
 export default function ForecastPage() {
-  const propertiesQuery = useApiQuery(() => listProperties(), []);
+  const propertiesQuery = useApiQuery(
+    () => listProperties({ page: 1, pageSize: 200 }),
+    [],
+  );
   const [propertyId, setPropertyId] = useState<string>('');
 
   const properties = propertiesQuery.data?.data ?? [];

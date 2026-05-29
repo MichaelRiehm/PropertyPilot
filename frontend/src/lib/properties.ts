@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export const PROPERTY_TYPES = [
   'SINGLE_FAMILY',
@@ -39,12 +40,7 @@ export interface Property {
   updatedAt: string;
 }
 
-export interface PropertyListResponse {
-  data: Property[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type PropertyListResponse = PaginatedResponse<Property>;
 
 export interface PropertyCreateInput {
   name: string;
@@ -58,8 +54,11 @@ export interface PropertyCreateInput {
 
 export type PropertyUpdateInput = Partial<PropertyCreateInput>;
 
-export function listProperties(): Promise<PropertyListResponse> {
-  return api.get<PropertyListResponse>('/properties');
+export function listProperties(params: PaginationParams = {}): Promise<PropertyListResponse> {
+  return api.get<PropertyListResponse>('/properties', {
+    page: params.page,
+    pageSize: params.pageSize,
+  });
 }
 
 export function createProperty(input: PropertyCreateInput): Promise<Property> {

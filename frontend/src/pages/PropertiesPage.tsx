@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Building2, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useApiQuery } from '../lib/useApi';
 import {
@@ -8,8 +8,10 @@ import {
   listProperties,
   type Property,
 } from '../lib/properties';
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import PropertyFormModal from '../components/PropertyFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Pagination from '../components/Pagination';
 
 type FormState =
   | { kind: 'closed' }
@@ -17,7 +19,10 @@ type FormState =
   | { kind: 'edit'; property: Property };
 
 export default function PropertiesPage() {
-  const query = useApiQuery(() => listProperties(), []);
+  const [page, setPage] = useState(1);
+  const pageSize = DEFAULT_PAGE_SIZE;
+  const fetcher = useCallback(() => listProperties({ page, pageSize }), [page, pageSize]);
+  const query = useApiQuery(fetcher, [page, pageSize]);
   const [form, setForm] = useState<FormState>({ kind: 'closed' });
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null);
 
@@ -32,7 +37,12 @@ export default function PropertiesPage() {
     if (!deleteTarget) return;
     await deleteProperty(deleteTarget.id);
     setDeleteTarget(null);
-    void query.refresh();
+    // If we just emptied the current page, step back one.
+    if (items.length === 1 && page > 1) {
+      setPage(page - 1);
+    } else {
+      void query.refresh();
+    }
   }
 
   return (
@@ -96,7 +106,8 @@ export default function PropertiesPage() {
         </div>
       )}
 
-      {!query.loading && !query.error && items.length > 0 && (
+      {!query.loading && !query.error && items.length > 0 && query.data && (
+        <>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -152,6 +163,14 @@ export default function PropertiesPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={query.data.page}
+          pageSize={query.data.pageSize}
+          total={query.data.total}
+          totalPages={query.data.totalPages}
+          onPageChange={setPage}
+        />
+        </>
       )}
 
       {form.kind === 'create' && (

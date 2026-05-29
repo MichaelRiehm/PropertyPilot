@@ -28,7 +28,7 @@ export class LeaseRepository extends BaseRepository<Lease, LeaseListFilter> {
   }
 
   public async list(filter: LeaseListFilter): Promise<PaginatedResult<Lease>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const where = {
       unit: { property: { ownerId: filter.ownerId } },
       ...(filter.unitId ? { unitId: filter.unitId } : {}),
@@ -39,12 +39,12 @@ export class LeaseRepository extends BaseRepository<Lease, LeaseListFilter> {
       this.prisma.lease.findMany({
         where,
         orderBy: [{ startDate: 'desc' }],
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.lease.count({ where }),
     ]);
-    return { data: rows.map(leaseFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(leaseFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: Lease): Promise<Lease> {

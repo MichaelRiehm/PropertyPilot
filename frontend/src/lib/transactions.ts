@@ -1,4 +1,5 @@
 import { api } from './apiClient';
+import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export const TRANSACTION_TYPES = [
   'RENT_INCOME',
@@ -34,12 +35,7 @@ export interface Transaction {
   updatedAt: string;
 }
 
-export interface TransactionListResponse {
-  data: Transaction[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+export type TransactionListResponse = PaginatedResponse<Transaction>;
 
 export interface TransactionCreateInput {
   propertyId: string;
@@ -58,8 +54,18 @@ export interface TransactionUpdateInput {
   description?: string;
 }
 
-export function listTransactions(): Promise<TransactionListResponse> {
-  return api.get<TransactionListResponse>('/transactions');
+export interface TransactionListParams extends PaginationParams {
+  propertyId?: string;
+}
+
+export function listTransactions(
+  params: TransactionListParams = {},
+): Promise<TransactionListResponse> {
+  return api.get<TransactionListResponse>('/transactions', {
+    page: params.page,
+    pageSize: params.pageSize,
+    propertyId: params.propertyId,
+  });
 }
 
 export function createTransaction(input: TransactionCreateInput): Promise<Transaction> {

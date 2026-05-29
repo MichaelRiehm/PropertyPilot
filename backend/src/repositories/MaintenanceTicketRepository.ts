@@ -33,7 +33,7 @@ export class MaintenanceTicketRepository extends BaseRepository<
   public async list(
     filter: MaintenanceTicketListFilter,
   ): Promise<PaginatedResult<MaintenanceTicket>> {
-    const { limit, offset } = this.normalizePagination(filter);
+    const { page, pageSize, take, skip } = this.resolvePagination(filter);
     const where = {
       property: { ownerId: filter.ownerId },
       ...(filter.propertyId ? { propertyId: filter.propertyId } : {}),
@@ -44,12 +44,12 @@ export class MaintenanceTicketRepository extends BaseRepository<
       this.prisma.maintenanceTicket.findMany({
         where,
         orderBy: [{ reportedAt: 'asc' }],
-        take: limit,
-        skip: offset,
+        take,
+        skip,
       }),
       this.prisma.maintenanceTicket.count({ where }),
     ]);
-    return { data: rows.map(maintenanceTicketFromPrisma), total, limit, offset };
+    return this.paginate(rows.map(maintenanceTicketFromPrisma), total, page, pageSize);
   }
 
   public async create(entity: MaintenanceTicket): Promise<MaintenanceTicket> {

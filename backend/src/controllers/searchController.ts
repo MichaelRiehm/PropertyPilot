@@ -86,7 +86,7 @@ export class SearchController {
       this.properties.search(q, ownerId, RESULT_CAP_PER_TYPE),
       this.tenants.search(q, ownerId, RESULT_CAP_PER_TYPE),
       this.transactions.search(q, ownerId, RESULT_CAP_PER_TYPE),
-      this.properties.list({ ownerId, limit: 200, offset: 0 }),
+      this.properties.list({ ownerId, page: 1, pageSize: 200 }),
     ]);
 
     const propertyNames = new Map(

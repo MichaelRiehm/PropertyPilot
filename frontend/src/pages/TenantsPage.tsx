@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { useApiQuery } from '../lib/useApi';
 import { deleteTenant, listTenants, type Tenant } from '../lib/tenants';
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import TenantFormModal from '../components/TenantFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
+import Pagination from '../components/Pagination';
 
 type FormState =
   | { kind: 'closed' }
@@ -12,7 +14,10 @@ type FormState =
   | { kind: 'edit'; tenant: Tenant };
 
 export default function TenantsPage() {
-  const query = useApiQuery(() => listTenants(), []);
+  const [page, setPage] = useState(1);
+  const pageSize = DEFAULT_PAGE_SIZE;
+  const fetcher = useCallback(() => listTenants({ page, pageSize }), [page, pageSize]);
+  const query = useApiQuery(fetcher, [page, pageSize]);
   const [form, setForm] = useState<FormState>({ kind: 'closed' });
   const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
 
@@ -27,7 +32,11 @@ export default function TenantsPage() {
     if (!deleteTarget) return;
     await deleteTenant(deleteTarget.id);
     setDeleteTarget(null);
-    void query.refresh();
+    if (items.length === 1 && page > 1) {
+      setPage(page - 1);
+    } else {
+      void query.refresh();
+    }
   }
 
   return (
@@ -89,7 +98,8 @@ export default function TenantsPage() {
         </div>
       )}
 
-      {!query.loading && !query.error && items.length > 0 && (
+      {!query.loading && !query.error && items.length > 0 && query.data && (
+        <>
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -152,6 +162,14 @@ export default function TenantsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={query.data.page}
+          pageSize={query.data.pageSize}
+          total={query.data.total}
+          totalPages={query.data.totalPages}
+          onPageChange={setPage}
+        />
+        </>
       )}
 
       {form.kind === 'create' && (
