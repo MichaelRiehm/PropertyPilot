@@ -6,6 +6,23 @@ A full-stack property management web application for small residential landlords
 
 Built as the WGU **D424 Software Engineering Capstone** project by Michael Riehm.
 
+## Status
+
+**Part B — Application requirements: complete.** All eight rubric sub-bullets have shipped:
+
+| # | Requirement | Status |
+| --- | --- | --- |
+| B.1 | Inheritance, polymorphism, encapsulation in the domain layer | ✅ Complete |
+| B.2 | Search with multi-row results across entities | ✅ Complete |
+| B.3 | Secure database CRUD for properties, units, tenants, leases, and transactions | ✅ Complete |
+| B.4 | Report generation: Rent Roll, YTD Profit & Loss, Occupancy, Maintenance Aging | ✅ Complete |
+| B.5 | Input validation, client and server, with Zod | ✅ Complete |
+| B.6 | Industry-appropriate security: JWT, bcrypt, helmet, CORS, auth rate limiting | ✅ Complete |
+| B.7 | Scalability: pagination, database indexes, stateless backend | ✅ Complete |
+| B.8 | User-friendly functional GUI: dashboard, list pages, forms, reports, forecast | ✅ Complete |
+
+Part C (documentation), Part D (testing), and Part E (Panopto video) are next.
+
 ## Stack
 
 - **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + React Router + React Hook Form + Zod
