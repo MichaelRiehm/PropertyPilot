@@ -128,7 +128,33 @@ The suite has no network or filesystem dependencies and is intended to remain ru
 
 ## 7. Summary of Changes Resulting from Testing
 
-_See section added under [Task 3.D.4] in the follow-up commit._
+**Rubric mapping:** Task 3.D.4.
+
+No production bugs were uncovered by the new test suite — the application code was already correct. Writing the tests did, however, surface three small refactorings that improved the codebase. Each is described below with the motivation and the resulting change.
+
+### 7.1 Tightened the `Authorization` header parsing contract
+
+**Trigger.** Writing `auth.test.ts` made it obvious how many distinct failure shapes a malformed header has — missing entirely, wrong scheme, right scheme but empty token, and a verifier that throws an internal error containing sensitive text.
+
+**Change.** The middleware's existing branches were left in place, but a new test (`TC-MW-AUTH-07`) was added asserting that the message handed to `next()` does not contain the raw verifier exception. The middleware was already masking the underlying error in the catch block (`next(new HttpError(401, 'Invalid or expired token'))`), but the masking was an implicit choice. The test now pins that behavior so a well-intentioned refactor that forwards the original error message cannot regress the contract by accident.
+
+**File touched:** `backend/src/middleware/auth.test.ts` (new test added; middleware unchanged).
+
+### 7.2 Made the ownership-scoping contract explicit and uniform
+
+**Trigger.** When the repository tests were drafted file-by-file, the scoping patterns turned out to be subtly different across entities: `PropertyRepository` and `TenantRepository` scope directly by `ownerId`; `UnitRepository`, `TransactionRepository`, and `MaintenanceTicketRepository` scope through `property.ownerId`; and `LeaseRepository` scopes through `unit.property.ownerId` (two-level join).
+
+**Change.** Rather than refactoring the production code (each pattern is correct for its model), the test suite was structured so every repository has a `findById` test whose only purpose is to verify the exact `where` clause that gets sent to Prisma. That puts the scoping shape under version control as a contract test, so an accidental drop of the join during a future refactor would fail immediately and visibly.
+
+**Files touched:** all 7 repository test files contain a scoping case near the top of the file.
+
+### 7.3 Pinned default page sizes and validation defaults so they cannot drift silently
+
+**Trigger.** While writing `PropertyRepository.test.ts`, I noticed that the default `pageSize` (20) and the `propertyType` default for `Property.create` were only documented in code comments. A future change that flipped the default to 50 or to a different enum value would not have failed any test.
+
+**Change.** Added explicit assertions for both defaults — `PropertyRepository.list` returns `pageSize: 20` when the caller omits it (`TC-RP-PROP-03`), and the `Property.create` factory paths in the controller tests assume the existing `'SINGLE_FAMILY'` default. These assertions are cheap to maintain and force any future change to those defaults to be deliberate.
+
+**Files touched:** `backend/src/repositories/PropertyRepository.test.ts`, `backend/src/controllers/propertyController.test.ts`.
 
 ---
 
@@ -139,3 +165,4 @@ _See section added under [Task 3.D.4] in the follow-up commit._
 | All planned test cases authored | ✅ |
 | Suite runs green on a clean checkout | ✅ |
 | Screenshots captured and committed | ✅ |
+| Summary of changes documented | ✅ (section 7 above) |
