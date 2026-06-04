@@ -1,0 +1,70 @@
+flowchart LR
+    %% PropertyPilot system architecture diagram (Task 3.C.1).
+    %% Three runtime tiers (browser, backend API, database) with the internal
+    %% backend layering and the Render hosting overlay.
+
+    subgraph Browser["Browser - React 18 + Vite + Tailwind"]
+        direction TB
+        Pages["Pages: Dashboard, Properties, Units, Tenants,<br/>Leases, Transactions, Reports, Forecast, Search"]
+        Components["Reusable components:<br/>Forms, Modals, Pagination, NavBar"]
+        ClientSchemas["Zod schemas (client-side validation)"]
+        ApiClient["lib/apiClient.ts<br/>fetch wrapper + JWT header"]
+        Pages --> Components
+        Pages --> ClientSchemas
+        Pages --> ApiClient
+    end
+
+    subgraph Backend["Backend - Node 20 + Express 5 + TypeScript"]
+        direction TB
+        Helmet["helmet + CORS + express-rate-limit"]
+        Routes["Routes:<br/>/api/auth, /api/properties, /api/units,<br/>/api/tenants, /api/leases, /api/transactions,<br/>/api/dashboard, /api/search,<br/>/api/reports, /api/forecast"]
+        AuthMW["authMiddleware<br/>JWT verify, attaches req.user"]
+        ServerSchemas["Zod schemas<br/>server-side validation, source of truth"]
+        Controllers["Controllers (one per resource)"]
+        Reports["Reports:<br/>RentRoll, P and L, Occupancy, Aging"]
+        Forecast["CashFlowForecaster"]
+        Repos["Repositories<br/>owner-scoped Prisma access"]
+        Domain["Domain classes:<br/>Property, Unit, Tenant, Lease,<br/>Transaction, MaintenanceTicket<br/>+ abstract Entity + Reportable"]
+        Mappers["mappers.ts<br/>Prisma row to domain instance"]
+        Errors["errorHandler<br/>maps ZodError, NotFoundError,<br/>HttpError, Prisma errors"]
+        PrismaClient["Prisma Client"]
+
+        Helmet --> Routes
+        Routes --> AuthMW
+        AuthMW --> Controllers
+        Controllers --> ServerSchemas
+        Controllers --> Repos
+        Controllers --> Reports
+        Controllers --> Forecast
+        Reports --> Repos
+        Forecast --> Repos
+        Repos --> Mappers
+        Repos --> Domain
+        Repos --> PrismaClient
+        Mappers --> Domain
+        Controllers --> Errors
+    end
+
+    subgraph Database["PostgreSQL 16"]
+        direction TB
+        Tables["users, properties, units, tenants,<br/>leases, transactions, maintenance_tickets"]
+        Indexes["B-tree indexes on FK columns<br/>+ composite indexes for list filters"]
+    end
+
+    ApiClient -->|HTTPS Bearer JWT| Helmet
+    PrismaClient -->|TLS connection string| Tables
+
+    subgraph Render["Render - managed cloud hosting"]
+        direction TB
+        StaticSite["Static Site (frontend/dist)"]
+        WebService["Web Service - Node, runs backend"]
+        ManagedPG["Managed PostgreSQL"]
+    end
+    Browser -.served from.-> StaticSite
+    Backend -.runs in.-> WebService
+    Database -.hosted as.-> ManagedPG
+
+    classDef tier fill:#f1f5f9,stroke:#0f172a,stroke-width:1px;
+    classDef hosting fill:#fef3c7,stroke:#92400e,stroke-width:1px;
+    class Browser,Backend,Database tier;
+    class Render hosting;
