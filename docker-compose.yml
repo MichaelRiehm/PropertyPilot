@@ -11,12 +11,70 @@ services:
       - "5432:5432"
     volumes:
       - propertypilot_pgdata:/var/lib/postgresql/data
+    networks:
+      - propertypilot
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U propertypilot -d propertypilot"]
       interval: 5s
       timeout: 5s
       retries: 10
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: propertypilot-backend
+    container_name: propertypilot-backend
+    restart: unless-stopped
+    environment:
+      # In-cluster DB host is the postgres service name on the shared network.
+      DATABASE_URL: postgresql://propertypilot:propertypilot@postgres:5432/propertypilot?schema=public
+      # Origin allowed by the backend CORS middleware. Match the frontend host.
+      FRONTEND_URL: http://localhost:8080
+      PORT: "4000"
+      # JWT_SECRET is read from the root .env. If you do not have one, set it
+      # in `.env` (see `.env.example`) before running `docker compose up`.
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in .env or the environment}
+    ports:
+      - "4000:4000"
+    networks:
+      - propertypilot
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: propertypilot-frontend
+    container_name: propertypilot-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - propertypilot
+    depends_on:
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   propertypilot_pgdata:
     name: propertypilot_pgdata
+
+networks:
+  propertypilot:
+    name: propertypilot
+    driver: bridge

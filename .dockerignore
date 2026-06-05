@@ -1,0 +1,52 @@
+# Build context is the repo root. Keep it lean — the COPY layers explicitly
+# pull only the package manifests and source directories they need, but
+# anything below would slow the upload to the Docker daemon if not excluded.
+
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/.nyc_output
+**/*.tsbuildinfo
+
+# Local environment files (production secrets come from compose/Render).
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# Git internals.
+.git
+.gitignore
+.gitattributes
+.github/
+
+# IDE / OS noise.
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs and ad-hoc dev notes.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev.log
+
+# Markdown / docs aren't needed at runtime.
+docs/
+*.md
+!frontend/index.html
+!frontend/src/**
+
+# Existing local docker overrides.
+docker-compose.override.yml
+
+# Tests do not run inside the production image.
+**/*.test.ts

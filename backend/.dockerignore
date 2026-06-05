@@ -1,0 +1,27 @@
+# Used when the backend is built from its own directory as the Docker
+# context (e.g. `docker build -f backend/Dockerfile backend`). The default
+# compose build uses the repo root and the root .dockerignore, but these
+# rules mirror it so a package-scoped build stays slim.
+
+node_modules
+dist
+coverage
+*.tsbuildinfo
+
+# Local env files.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dev / IDE noise.
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*.log
+
+# Tests do not run inside the production image.
+src/**/*.test.ts
