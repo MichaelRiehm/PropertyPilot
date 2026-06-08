@@ -1,0 +1,15 @@
+# Render Static Site routing rules. Vite copies anything in frontend/public/
+# verbatim into frontend/dist/, so this file lands at the publish root and
+# Render reads it.
+#
+# Order matters: more specific rules first. The 200 status code = rewrite
+# (proxy, URL stays the same); 301/302 would be a redirect.
+
+# Reverse-proxy /api/* to the backend service, mirroring the local Docker
+# nginx setup. Same-origin from the browser's perspective, so no CORS
+# round-trips for API calls.
+/api/*  https://propertypilot-backend.onrender.com/api/:splat  200
+
+# SPA fallback so React Router routes (e.g. /dashboard, /properties)
+# resolve to index.html instead of returning Render's default 404.
+/*  /index.html  200
