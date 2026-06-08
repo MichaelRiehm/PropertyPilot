@@ -331,7 +331,9 @@ Prisma maintains its own connection pool against PostgreSQL. The default pool si
 
 | Item | URL |
 |---|---|
-| Deployed application | _Added under Task 3.C.2_ |
+| Deployed application | <https://propertypilot-frontend.onrender.com> |
+| Backend API base | <https://propertypilot-backend.onrender.com> |
+| Backend health check | <https://propertypilot-backend.onrender.com/api/health> |
 | GitLab repository | _Added under Task 3.C.3, with version tag_ |
 | Panopto functionality demo | _Added under Task 3.E_ |
 | Panopto deployment demo | _Added under Task 4.C_ |
