@@ -334,6 +334,7 @@ Prisma maintains its own connection pool against PostgreSQL. The default pool si
 | Deployed application | <https://propertypilot-frontend.onrender.com> |
 | Backend API base | <https://propertypilot-backend.onrender.com> |
 | Backend health check | <https://propertypilot-backend.onrender.com/api/health> |
-| GitLab repository | _Added under Task 3.C.3, with version tag_ |
+| GitLab repository | <https://gitlab.com/wgu-gitlab-environment/student-repos/mriehm1/d424-software-engineering-capstone> |
+| Tagged release | `v1.0.0` — [browse the tagged tree](https://gitlab.com/wgu-gitlab-environment/student-repos/mriehm1/d424-software-engineering-capstone/-/tree/v1.0.0) |
 | Panopto functionality demo | _Added under Task 3.E_ |
 | Panopto deployment demo | _Added under Task 4.C_ |
