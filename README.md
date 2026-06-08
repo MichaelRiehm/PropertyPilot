@@ -8,6 +8,8 @@ Built as the WGU **D424 Software Engineering Capstone** project by Michael Riehm
 
 ## Status
 
+**Live deployment:** <https://propertypilot-frontend.onrender.com>
+
 **Part B — Application requirements: complete.** All eight rubric sub-bullets have shipped:
 
 | # | Requirement | Status |
@@ -21,7 +23,19 @@ Built as the WGU **D424 Software Engineering Capstone** project by Michael Riehm
 | B.7 | Scalability: pagination, database indexes, stateless backend | ✅ Complete |
 | B.8 | User-friendly functional GUI: dashboard, list pages, forms, reports, forecast | ✅ Complete |
 
-Part C (documentation), Part D (testing), and Part E (Panopto video) are next.
+**Part C — Documentation: complete.**
+
+| # | Deliverable | Status |
+| --- | --- | --- |
+| C.1 | Design document with class and architecture diagrams | ✅ Complete — see [`docs/design-document.md`](docs/design-document.md) |
+| C.2 | Deployed application URL | ✅ Complete — <https://propertypilot-frontend.onrender.com> |
+| C.3 | GitLab repository URL with version tag | ✅ Complete — tagged `v1.0.0` |
+| C.4 | Maintenance / setup user guide | ✅ Complete — see [`docs/maintenance-guide.md`](docs/maintenance-guide.md) |
+| C.5 | End-user guide | ✅ Complete — see [`docs/user-guide.md`](docs/user-guide.md) |
+
+**Part D — Testing: complete.** 209 unit tests across 30 files, all green. See [`docs/test-plan.md`](docs/test-plan.md) and [`docs/test-results.md`](docs/test-results.md).
+
+Part E (Panopto video) and Task 4 (deployment scripts and provider justification) are next.
 
 ## Stack
 
