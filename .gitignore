@@ -42,3 +42,7 @@ prisma/*.db
 
 # Docker
 docker-compose.override.yml
+
+# Local-only notes that may contain secrets (e.g. render-deployment.local.md).
+# Anything named *.local.md is treated as untracked and never committed.
+*.local.md

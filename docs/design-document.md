@@ -338,3 +338,24 @@ Prisma maintains its own connection pool against PostgreSQL. The default pool si
 | Tagged release | `v1.0.0` — [browse the tagged tree](https://gitlab.com/wgu-gitlab-environment/student-repos/mriehm1/d424-software-engineering-capstone/-/tree/v1.0.0) |
 | Panopto functionality demo | _Added under Task 3.E_ |
 | Panopto deployment demo | _Added under Task 4.C_ |
+
+---
+
+## 8. References
+
+The frameworks, libraries, services, and tools referenced throughout this document are documented at the official sources below. Architectural patterns, defaults, and capability descriptions paraphrased from these sources informed the corresponding sections of this design.
+
+- Docker, Inc. (n.d.). *Docker documentation*. https://docs.docker.com/
+- Express. (n.d.). *Express - Node.js web application framework*. https://expressjs.com/
+- Helmet contributors. (n.d.). *helmet - npm*. https://www.npmjs.com/package/helmet
+- Kachnit, A. (n.d.). *bcrypt - npm*. https://www.npmjs.com/package/bcrypt
+- Meta Platforms. (n.d.). *React documentation*. https://react.dev/
+- Microsoft. (n.d.). *TypeScript documentation*. https://www.typescriptlang.org/docs/
+- Node.js contributors. (n.d.). *Node.js v20 documentation*. https://nodejs.org/docs/latest-v20.x/api/
+- OpenJS Foundation. (n.d.). *jsonwebtoken - npm*. https://www.npmjs.com/package/jsonwebtoken
+- PostgreSQL Global Development Group. (n.d.). *PostgreSQL 16 documentation*. https://www.postgresql.org/docs/16/index.html
+- Prisma. (n.d.). *Prisma documentation*. https://www.prisma.io/docs
+- Render. (n.d.). *Render documentation*. https://render.com/docs
+- Vite contributors. (n.d.). *Vite — Next generation frontend tooling*. https://vitejs.dev/
+- Vitest contributors. (n.d.). *Vitest — Next generation testing framework*. https://vitest.dev/
+- Vlk, C. (n.d.). *Zod — TypeScript-first schema validation*. https://zod.dev/
