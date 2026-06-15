@@ -1,7 +1,8 @@
 # PropertyPilot — Deployment Guide
 
-**Last updated:** 2026-06-04
+**Last updated:** 2026-06-15
 **Audience:** Anyone deploying or maintaining PropertyPilot — local Docker stack today, Render in production.
+**Demo video:** <https://wgu.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=469d7d62-8df4-4fc0-9216-b46a0127df57>
 
 This document covers the containerization story end-to-end. It supplements [`maintenance-guide.md`](maintenance-guide.md), which covers the un-containerized local workflow.
 
