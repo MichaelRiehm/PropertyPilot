@@ -2,7 +2,7 @@
   "name": "propertypilot",
   "version": "0.1.0",
   "private": true,
-  "description": "PropertyPilot — property management web app for small residential landlords (WGU D424 capstone).",
+  "description": "Full-stack property management web app for small residential landlords. React + TypeScript + Node.js + PostgreSQL, deployed on Render.",
   "workspaces": [
     "backend",
     "frontend"
@@ -10,7 +10,12 @@
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev -w backend\" \"npm:dev -w frontend\"",
     "build": "npm run build -w backend && npm run build -w frontend",
-    "test": "npm run test -w backend && npm run test -w frontend"
+    "test": "npm run test -w backend && npm run test -w frontend",
+    "db:up": "docker compose up -d postgres",
+    "db:migrate": "npm run prisma:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:reset": "cd backend && dotenv -e ../.env -- prisma migrate reset --force",
+    "demo": "npm run db:up && npm run db:migrate && npm run db:seed && npm run dev"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

@@ -148,6 +148,7 @@ const TENANTS: TenantSeed[] = [
   { id: 'dev-tenant-jordan', firstName: 'Jordan', lastName: 'Wells', email: 'jordan.wells@example.com', phone: '608-555-0102' },
   { id: 'dev-tenant-pat', firstName: 'Pat', lastName: 'Romero', email: 'pat.romero@example.com', phone: '608-555-0103' },
   { id: 'dev-tenant-avery', firstName: 'Avery', lastName: 'Park', email: 'avery.park@example.com', phone: null },
+  { id: 'dev-tenant-kai', firstName: 'Kai', lastName: 'Nakamura', email: 'kai.nakamura@example.com', phone: '608-555-0104' },
 ];
 
 function buildLeases(): LeaseSeed[] {
@@ -201,6 +202,16 @@ function buildLeases(): LeaseSeed[] {
       monthlyRent: 1150,
       securityDeposit: 1150,
       status: 'EXPIRED',
+    },
+    {
+      id: 'dev-lease-6',
+      unitId: 'dev-unit-sunset-3',
+      tenantId: 'dev-tenant-kai',
+      startDate: monthsAgo(4),
+      endDate: monthsFromNow(8),
+      monthlyRent: 1350,
+      securityDeposit: 1350,
+      status: 'ACTIVE',
     },
   ];
 }
@@ -261,6 +272,11 @@ function buildTransactions(leases: LeaseSeed[]): TransactionSeed[] {
     { key: 'tax-pine', propertyId: 'dev-prop-pine', monthsBack: 4, type: 'EXPENSE', category: 'tax', amount: 2000, description: 'Quarterly property tax' },
     { key: 'insur-sunset', propertyId: 'dev-prop-sunset', monthsBack: 1, type: 'EXPENSE', category: 'insurance', amount: 600, description: 'Property insurance premium' },
     { key: 'pest-sunset', propertyId: 'dev-prop-sunset', monthsBack: 2, type: 'EXPENSE', category: 'maintenance', amount: 180, description: 'Pest control treatment' },
+    { key: 'appraisal-maple', propertyId: 'dev-prop-maple', monthsBack: 8, type: 'EXPENSE', category: 'professional services', amount: 450, description: 'Property appraisal for refinance' },
+    { key: 'water-sewer-maple-q1', propertyId: 'dev-prop-maple', monthsBack: 6, type: 'EXPENSE', category: 'utilities', amount: 285, description: 'Water and sewer (quarterly)' },
+    { key: 'water-sewer-maple-q2', propertyId: 'dev-prop-maple', monthsBack: 3, type: 'EXPENSE', category: 'utilities', amount: 312, description: 'Water and sewer (quarterly)' },
+    { key: 'cleaning-sunset', propertyId: 'dev-prop-sunset', monthsBack: 7, type: 'EXPENSE', category: 'cleaning', amount: 220, description: 'Move-out cleaning, Unit 2' },
+    { key: 'snow-maple', propertyId: 'dev-prop-maple', monthsBack: 4, type: 'EXPENSE', category: 'maintenance', amount: 340, description: 'Snow removal, seasonal contract' },
   ];
   for (const e of expenseSeeds) {
     txns.push({
@@ -364,6 +380,28 @@ function buildMaintenanceTickets(): MaintenanceTicketSeed[] {
       priority: 'HIGH',
       reportedAt: daysAgo(5),
       resolvedAt: null,
+    },
+    {
+      id: 'dev-mt-7',
+      propertyId: 'dev-prop-pine',
+      unitId: 'dev-unit-pine-a',
+      title: 'Garage door opener intermittent',
+      description: 'Tenant reports the remote works maybe 1 in 3 tries. Motor may be aging out.',
+      status: 'OPEN',
+      priority: 'MEDIUM',
+      reportedAt: daysAgo(120),
+      resolvedAt: null,
+    },
+    {
+      id: 'dev-mt-8',
+      propertyId: 'dev-prop-maple',
+      unitId: 'dev-unit-maple-1',
+      title: 'Tenant-requested wallpaper change',
+      description: 'Cosmetic wallpaper request. Declined per lease terms.',
+      status: 'CANCELED',
+      priority: 'LOW',
+      reportedAt: daysAgo(20),
+      resolvedAt: daysAgo(18),
     },
   ];
 }
