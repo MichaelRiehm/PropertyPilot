@@ -29,7 +29,8 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 - **12-month cash flow forecast per property** — projects income from active leases forward and expenses from a trailing average, flags months where projected expenses exceed income.
 - **Cross-entity search** — one input hits properties, tenants, and transactions in parallel.
 - **Full auth stack** — JWT + bcrypt (cost 12), rate-limited auth endpoints, helmet + CORS on every response.
-- **214 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
+- **227 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
+- **Playwright E2E** — headless Chromium covers register, sign-in, add-property, and read-a-report against the real dev servers on every PR.
 
 ## Screenshots
 
@@ -50,7 +51,7 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 |---|---|
 | **Frontend** | React 19, TypeScript, Vite, Tailwind, React Router 7, React Hook Form, Zod, recharts, lucide-react |
 | **Backend** | Node 20, Express 5, TypeScript, Prisma 6, PostgreSQL 16, bcrypt, jsonwebtoken, Zod, helmet, cors, express-rate-limit |
-| **Testing** | Vitest (backend and frontend workspaces) — 209 tests, mocked Prisma, no DB needed |
+| **Testing** | Vitest (backend + frontend workspaces) — 227 unit tests, mocked Prisma, no DB needed. Playwright for browser-level E2E on every PR. |
 | **Local dev** | Docker Compose (Postgres 16), npm workspaces monorepo |
 | **Deploy** | Multi-stage Dockerfiles, Render (static site + Docker web service + managed Postgres) |
 
@@ -95,6 +96,8 @@ The seed populates a demo landlord with 3 properties, 7 units, 5 tenants, 6 leas
 | `npm run demo` | End-to-end: start Postgres, migrate, seed, boot both dev servers |
 | `npm run dev` | Boot backend + frontend dev servers (assumes DB already up) |
 | `npm run test` | Vitest across both workspaces |
+| `npm run e2e:install` | One-time: install Playwright + Chromium |
+| `npm run test:e2e` | Playwright E2E against the local dev stack |
 | `npm run build` | Type-check and build both workspaces for production |
 | `npm run db:up` \| `db:migrate` \| `db:seed` | Compose primitives, run individually |
 | `npm run db:reset` | Drop + recreate + reseed (destructive; asks for confirmation) |
