@@ -49,3 +49,13 @@ export const transactionTypeSchema = z.enum(
   ['RENT_INCOME', 'DEPOSIT_INCOME', 'OTHER_INCOME', 'EXPENSE', 'REFUND'],
   { message: 'Pick a valid transaction type' },
 );
+
+export const maintenanceStatusSchema = z.enum(
+  ['OPEN', 'IN_PROGRESS', 'CLOSED', 'CANCELED'],
+  { message: 'Pick a valid maintenance status' },
+);
+
+export const maintenancePrioritySchema = z.enum(
+  ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+  { message: 'Pick a valid maintenance priority' },
+);

@@ -9,6 +9,7 @@ import {
   LogOut,
   Receipt,
   Users,
+  Wrench,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SearchBar from './SearchBar';
@@ -26,6 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/tenants', label: 'Tenants', icon: Users },
   { to: '/leases', label: 'Leases', icon: FileText },
   { to: '/transactions', label: 'Transactions', icon: Receipt },
+  { to: '/maintenance', label: 'Maintenance', icon: Wrench },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
   { to: '/forecast', label: 'Forecast', icon: LineChart },
 ];
