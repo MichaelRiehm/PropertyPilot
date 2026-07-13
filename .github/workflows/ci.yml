@@ -107,6 +107,9 @@ jobs:
         working-directory: e2e
         run: npx playwright install-deps chromium
 
+      - name: Generate Prisma client
+        run: npm run prisma:generate -w backend
+
       - name: Apply DB migrations
         run: npx prisma migrate deploy
         working-directory: backend
