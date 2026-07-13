@@ -15,6 +15,7 @@ import { TenantController } from '../controllers/tenantController';
 import { LeaseController } from '../controllers/leaseController';
 import { TransactionController } from '../controllers/transactionController';
 import { AuthController } from '../controllers/authController';
+import { HealthController } from '../controllers/healthController';
 import { SearchController } from '../controllers/searchController';
 import { ReportsController } from '../controllers/reportsController';
 import { ForecastController } from '../controllers/forecastController';
@@ -80,10 +81,10 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
 
   const router = Router();
 
+  const healthController = new HealthController();
+
   // Public endpoints
-  router.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
-  });
+  router.get('/health', healthController.check);
   router.use('/auth', createAuthRouter(authController, authMiddleware));
 
   // Everything below requires a valid JWT
