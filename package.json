@@ -15,7 +15,9 @@
     "db:migrate": "npm run prisma:migrate -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:reset": "cd backend && dotenv -e ../.env -- prisma migrate reset --force",
-    "demo": "npm run db:up && npm run db:migrate && npm run db:seed && npm run dev"
+    "demo": "npm run db:up && npm run db:migrate && npm run db:seed && npm run dev",
+    "e2e:install": "cd e2e && npm install && npx playwright install --with-deps chromium",
+    "test:e2e": "cd e2e && npm test"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

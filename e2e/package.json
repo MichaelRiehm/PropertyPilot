@@ -1,0 +1,18 @@
+{
+  "name": "propertypilot-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Playwright end-to-end tests for PropertyPilot. Intentionally not part of npm workspaces so it doesn't inflate the backend/frontend Docker builds.",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "install:chromium": "playwright install --with-deps chromium",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
