@@ -27,7 +27,7 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 - **12-month cash flow forecast per property** — projects income from active leases forward and expenses from a trailing average, flags months where projected expenses exceed income.
 - **Cross-entity search** — one input hits properties, tenants, and transactions in parallel.
 - **Full auth stack** — JWT + bcrypt (cost 12), rate-limited auth endpoints, helmet + CORS on every response.
-- **209 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
+- **214 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
 
 ## Screenshots
 
