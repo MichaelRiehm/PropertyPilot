@@ -2,6 +2,8 @@
 
 **A full-stack property management app for small residential landlords.** Track properties, tenants, leases, rent and expenses, and maintenance tickets — then get standard reports and a 12-month cash flow forecast, all from one dashboard.
 
+**🔗 Live demo:** <https://propertypilot-frontend.onrender.com> — sign in as `dev@propertypilot.local` / `dev1234`. Pre-loaded with 3 properties, 6 leases, a year of transactions, and 8 maintenance tickets so every report and the forecast render with real data.
+
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)
