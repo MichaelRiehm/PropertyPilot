@@ -9,6 +9,7 @@ import UnitsPage from './pages/UnitsPage';
 import TenantsPage from './pages/TenantsPage';
 import LeasesPage from './pages/LeasesPage';
 import TransactionsPage from './pages/TransactionsPage';
+import MaintenanceTicketsPage from './pages/MaintenanceTicketsPage';
 import ReportsPage from './pages/ReportsPage';
 import ForecastPage from './pages/ForecastPage';
 import SearchPage from './pages/SearchPage';
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/tenants" element={<TenantsPage />} />
           <Route path="/leases" element={<LeasesPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/maintenance" element={<MaintenanceTicketsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/forecast" element={<ForecastPage />} />
           <Route path="/search" element={<SearchPage />} />

@@ -14,6 +14,7 @@ import { UnitController } from '../controllers/unitController';
 import { TenantController } from '../controllers/tenantController';
 import { LeaseController } from '../controllers/leaseController';
 import { TransactionController } from '../controllers/transactionController';
+import { MaintenanceTicketController } from '../controllers/maintenanceTicketController';
 import { AuthController } from '../controllers/authController';
 import { HealthController } from '../controllers/healthController';
 import { SearchController } from '../controllers/searchController';
@@ -25,6 +26,7 @@ import { createUnitRouter } from './units';
 import { createTenantRouter } from './tenants';
 import { createLeaseRouter } from './leases';
 import { createTransactionRouter } from './transactions';
+import { createMaintenanceTicketRouter } from './maintenance-tickets';
 import { createAuthRouter } from './auth';
 import { createSearchRouter } from './search';
 import { createReportsRouter } from './reports';
@@ -78,6 +80,11 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
     transactionRepo,
     maintenanceTicketRepo,
   );
+  const maintenanceTicketController = new MaintenanceTicketController(
+    maintenanceTicketRepo,
+    propertyRepo,
+    unitRepo,
+  );
 
   const router = Router();
 
@@ -98,5 +105,6 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   router.use('/reports', createReportsRouter(reportsController));
   router.use('/forecast', createForecastRouter(forecastController));
   router.use('/dashboard', createDashboardRouter(dashboardController));
+  router.use('/maintenance-tickets', createMaintenanceTicketRouter(maintenanceTicketController));
   return router;
 }
