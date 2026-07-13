@@ -1,135 +1,157 @@
-<strong>**DO NOT DISTRIBUTE OR PUBLICLY POST SOLUTIONS TO THESE LABS. MAKE ALL FORKS OF THIS REPOSITORY WITH SOLUTION CODE PRIVATE. PLEASE REFER TO THE STUDENT CODE OF CONDUCT AND ETHICAL EXPECTATIONS FOR COLLEGE OF INFORMATION TECHNOLOGY STUDENTS FOR SPECIFICS. **</strong>
-
 # PropertyPilot
 
-A full-stack property management web application for small residential landlords (1–10 units). Tracks properties, units, tenants, leases, rent transactions, maintenance requests, and a 12-month cash flow forecast.
+**A full-stack property management app for small residential landlords.** Track properties, tenants, leases, rent and expenses, and maintenance tickets — then get standard reports and a 12-month cash flow forecast, all from one dashboard.
 
-Built as the WGU **D424 Software Engineering Capstone** project by Michael Riehm.
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-multi--stage-2496ED?logo=docker&logoColor=white)
+![Vitest](https://img.shields.io/badge/Vitest-4-6E9F18?logo=vitest&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-## Status
+![Dashboard](docs/screenshots/dashboard.png)
 
-**Live deployment:** <https://propertypilot-frontend.onrender.com>
+The problem: small landlords with 1–10 units run their whole operation from a spreadsheet. Rent, expenses, lease dates, and maintenance backlogs all live in different tabs, and there's no easy way to project cash flow. PropertyPilot replaces that spreadsheet with structured domain records, four standard reports, and a per-property forecast — while keeping the daily workflow (recording a payment, opening a ticket) fast.
 
-**Part B — Application requirements: complete.** All eight rubric sub-bullets have shipped:
+Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project demonstrating full-stack TypeScript, a real domain model, and an AI-assisted development workflow (see below).
 
-| # | Requirement | Status |
-| --- | --- | --- |
-| B.1 | Inheritance, polymorphism, encapsulation in the domain layer | ✅ Complete |
-| B.2 | Search with multi-row results across entities | ✅ Complete |
-| B.3 | Secure database CRUD for properties, units, tenants, leases, and transactions | ✅ Complete |
-| B.4 | Report generation: Rent Roll, YTD Profit & Loss, Occupancy, Maintenance Aging | ✅ Complete |
-| B.5 | Input validation, client and server, with Zod | ✅ Complete |
-| B.6 | Industry-appropriate security: JWT, bcrypt, helmet, CORS, auth rate limiting | ✅ Complete |
-| B.7 | Scalability: pagination, database indexes, stateless backend | ✅ Complete |
-| B.8 | User-friendly functional GUI: dashboard, list pages, forms, reports, forecast | ✅ Complete |
+---
 
-**Part C — Documentation: complete.**
+## What it does
 
-| # | Deliverable | Status |
-| --- | --- | --- |
-| C.1 | Design document with class and architecture diagrams | ✅ Complete — see [`docs/design-document.md`](docs/design-document.md) |
-| C.2 | Deployed application URL | ✅ Complete — <https://propertypilot-frontend.onrender.com> |
-| C.3 | GitLab repository URL with version tag | ✅ Complete — tagged `v1.0.0` |
-| C.4 | Maintenance / setup user guide | ✅ Complete — see [`docs/maintenance-guide.md`](docs/maintenance-guide.md) |
-| C.5 | End-user guide | ✅ Complete — see [`docs/user-guide.md`](docs/user-guide.md) |
+- **CRUD across the full domain** — properties, units, tenants, leases, transactions (rent, deposits, expenses, refunds), maintenance tickets. Every query is owner-scoped so users can't see each other's data.
+- **Four standard reports** with CSV export — Rent Roll, YTD Profit & Loss, Occupancy, Maintenance Aging (buckets by age).
+- **12-month cash flow forecast per property** — projects income from active leases forward and expenses from a trailing average, flags months where projected expenses exceed income.
+- **Cross-entity search** — one input hits properties, tenants, and transactions in parallel.
+- **Full auth stack** — JWT + bcrypt (cost 12), rate-limited auth endpoints, helmet + CORS on every response.
+- **209 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
 
-**Part D — Testing: complete.** 209 unit tests across 30 files, all green. See [`docs/test-plan.md`](docs/test-plan.md) and [`docs/test-results.md`](docs/test-results.md).
+## Screenshots
 
-Part E (Panopto video) and Task 4 (deployment scripts and provider justification) are next.
+<table>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/reports-aging.png"><img src="docs/screenshots/reports-aging.png" alt="Maintenance Aging report"/></a><br/><sub><b>Maintenance Aging report</b> — tickets bucketed by age with CSV export.</sub></td>
+    <td width="50%"><a href="docs/screenshots/forecast.png"><img src="docs/screenshots/forecast.png" alt="12-month cash flow forecast"/></a><br/><sub><b>12-month forecast</b> — active leases forward, trailing expense average.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/screenshots/properties.png"><img src="docs/screenshots/properties.png" alt="Properties list"/></a><br/><sub><b>Properties list</b> — paginated, filterable, one row per property.</sub></td>
+    <td width="50%"><a href="docs/screenshots/add-property-modal.png"><img src="docs/screenshots/add-property-modal.png" alt="Add Property form"/></a><br/><sub><b>Add Property modal</b> — validated client-side and server-side with the same Zod schemas.</sub></td>
+  </tr>
+</table>
 
-## Stack
+## Tech stack
 
-- **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS + React Router + React Hook Form + Zod
-- **Backend:** Node.js 20 + Express + TypeScript + Prisma + Zod + bcrypt + JWT
-- **Database:** PostgreSQL 16 (Docker locally, managed Postgres in production)
-- **Testing:** Vitest
-- **Containerization:** Docker + docker-compose
+| Layer | Choices |
+|---|---|
+| **Frontend** | React 19, TypeScript, Vite, Tailwind, React Router 7, React Hook Form, Zod, recharts, lucide-react |
+| **Backend** | Node 20, Express 5, TypeScript, Prisma 6, PostgreSQL 16, bcrypt, jsonwebtoken, Zod, helmet, cors, express-rate-limit |
+| **Testing** | Vitest (backend and frontend workspaces) — 209 tests, mocked Prisma, no DB needed |
+| **Local dev** | Docker Compose (Postgres 16), npm workspaces monorepo |
+| **Deploy** | Multi-stage Dockerfiles, Render (static site + Docker web service + managed Postgres) |
 
-## Repository Layout
+## Architecture
 
-```
-/
-├── backend/      # Express API, Prisma schema, domain layer
-├── frontend/     # Vite + React app
-├── docker-compose.yml
-├── package.json  # npm workspace root
-└── README.md
-```
+Three tiers, layered backend, one domain model that carries the OO story:
 
-## Prerequisites
+![Architecture](docs/diagrams/architecture-diagram.png)
 
-- **Node.js 20+** and **npm 10+** — https://nodejs.org/
-- **Docker Desktop** (running) — https://www.docker.com/products/docker-desktop/
-- **Git**
+- **Layered backend.** `routes → auth middleware → controllers → repositories → Prisma`. Controllers never touch Prisma; repositories are the only layer that does.
+- **Domain classes on top of Prisma.** An abstract `Entity` base with concrete `Property`, `Unit`, `Tenant`, `Lease`, `Transaction`, `MaintenanceTicket` classes. Each implements a polymorphic `validate()` and satisfies a `Reportable` interface. Prisma stays for type-safe SQL; the domain classes hold the behavior. See the [class diagram](docs/diagrams/class-diagram.png).
+- **Same Zod schemas both sides.** The frontend gets instant field validation from the same Zod definitions the server treats as authoritative. Client-side is for UX, server-side is the source of truth.
+- **Owner-scoped queries everywhere.** Repositories take `ownerId` and bake it into every `where` clause (direct or via join). The test suite pins that contract for every repository so a bad refactor fails immediately.
 
-Verify:
+## Getting started
 
-```powershell
-node --version
-npm --version
-docker --version
-docker compose version
-```
-
-## Setup
-
-### 1. Clone
+Prereqs: **Node 20+**, **Docker Desktop**, **Git**.
 
 ```powershell
-git clone https://gitlab.com/wgu-gitlab-environment/student-repos/mriehm1/d424-software-engineering-capstone.git propertypilot
-cd propertypilot
-```
+git clone https://github.com/MichaelRiehm/PropertyPilot.git
+cd PropertyPilot
 
-### 2. Configure environment
-
-```powershell
+# One-time env setup
 Copy-Item .env.example .env
-```
-
-The default values in `.env.example` match the Docker Compose Postgres settings, so the file works out of the box for local development. Update `JWT_SECRET` to anything other than the placeholder before deploying.
-
-### 3. Start PostgreSQL
-
-```powershell
-docker compose up -d
-```
-
-This starts a single `postgres:16-alpine` container exposed on `localhost:5432` with database `propertypilot`. Data persists in a named Docker volume (`propertypilot_pgdata`).
-
-### 4. Install dependencies
-
-```powershell
 npm install
+
+# Full local demo: postgres + migrate + seed + dev servers
+npm run demo
 ```
 
-This installs root, backend, and frontend dependencies via npm workspaces.
+Then open <http://localhost:5173> and sign in as:
 
-### 5. Run the initial Prisma migration
+- **Email** `dev@propertypilot.local`
+- **Password** `dev1234`
 
-```powershell
-npm run prisma:migrate -w backend
-```
+The seed populates a demo landlord with 3 properties, 7 units, 5 tenants, 6 leases (mixed statuses), a year of monthly rent payments, expenses across 6 categories, and 8 maintenance tickets across all 4 aging buckets — enough to make every report and the forecast look convincing.
 
-### 6. Start the dev servers
-
-```powershell
-npm run dev
-```
-
-This launches both servers in parallel:
-
-- Backend API: http://localhost:4000 (health check at `/api/health`)
-- Frontend: http://localhost:5173
-
-## Useful Commands
+### Useful commands
 
 | Command | What it does |
-| --- | --- |
-| `npm run dev` | Start backend and frontend dev servers concurrently |
-| `npm run build` | Type-check and build both workspaces |
-| `npm run test` | Run vitest in both workspaces |
-| `docker compose up -d` | Start PostgreSQL in the background |
-| `docker compose down` | Stop PostgreSQL (data persists in the named volume) |
-| `docker compose down -v` | Stop PostgreSQL **and** delete the data volume |
-| `npm run prisma:migrate -w backend` | Apply Prisma migrations to the local database |
-| `npm run prisma:studio -w backend` | Open Prisma Studio against the local database |
+|---|---|
+| `npm run demo` | End-to-end: start Postgres, migrate, seed, boot both dev servers |
+| `npm run dev` | Boot backend + frontend dev servers (assumes DB already up) |
+| `npm run test` | Vitest across both workspaces |
+| `npm run build` | Type-check and build both workspaces for production |
+| `npm run db:up` \| `db:migrate` \| `db:seed` | Compose primitives, run individually |
+| `npm run db:reset` | Drop + recreate + reseed (destructive; asks for confirmation) |
+| `docker compose up -d` | Full production-parity stack in Docker (postgres + backend + frontend + nginx) |
+
+## AI-assisted development workflow
+
+PropertyPilot is built the way I'd build production software with an AI copilot in 2026: **issues drive branches, agents draft PRs, CI + AI review before I merge.** This isn't marketing — it's the actual loop this repo uses. The purpose:
+
+- Turn any well-scoped roadmap item into a branch + PR without me hand-typing the boilerplate
+- Keep humans in the loop where judgement matters (design, review, merge)
+- Get consistent code review even on a single-developer project
+
+### The loop
+
+```
+GitHub Issue
+   │  (small, well-scoped feature or fix)
+   ▼
+AI agent implements on a branch, opens a PR
+   │
+   ▼
+CI runs (lint + build + tests)   ─┐
+AI review posts a PR comment      ├─  parallel
+                                   ─┘
+   │
+   ▼
+Human (me) reviews AI's findings, edits if needed, approves
+   │
+   ▼
+Merge to main → main is always green
+```
+
+### What's in this repo to support it
+
+- **[`CLAUDE.md`](CLAUDE.md)** — a codebase-context file that gives any AI agent the architecture map, conventions, and gotchas needed to work productively here. Also useful as an onboarding doc for a new human contributor.
+- **`.github/ISSUE_TEMPLATE/`** + **`.github/pull_request_template.md`** — templates that reflect this workflow, so every issue and PR carries the same shape.
+- **`.github/workflows/`** — GitHub Actions running lint, build, and the full Vitest suite on every PR. An AI-review job (optional) runs a code review pass and comments on the PR.
+- **Small, well-scoped issues** — the roadmap below is broken into issues that fit this pattern (one afternoon of work each, one PR each).
+
+### Why this matters for hiring
+
+Small teams and one-person startups can now ship what used to take 3–5 engineers, if the human at the wheel knows how to steer an AI. That skill is what this repo is designed to demonstrate: **prompting, reviewing, and integrating AI output into a maintainable codebase.**
+
+## Roadmap
+
+Small, well-scoped items I'd tackle next. Each becomes an issue → branch → PR.
+
+- **Multi-user / multi-property manager accounts** — currently every user is their own owner. Add a `Manager` role that can access multiple owners' portfolios (property-management-company scenario).
+- **Lease document upload** — replace the current `documentLink` URL field with a real file upload path (S3 or Render's object storage) and a signed-URL viewer.
+- **Email notifications** — rent-due reminders, ticket-status changes, lease-renewal warnings. Queue-based (BullMQ + Redis) so the API stays fast.
+- **Maintenance ticket CRUD UI** — currently ticket data exists (dashboard chips + aging report) but there's no create/edit page for owners. One CRUD page pattern already exists in five other places, so this is a mechanical add.
+- **Mobile-friendly reports** — the tables are cramped under 768px. Convert to responsive card layouts on narrow viewports.
+- **Playwright end-to-end tests** — unit coverage is solid (209 tests) but there's no browser-level regression test on the critical flows (register → add property → record rent → view P&L).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+Built by [Michael Riehm](https://github.com/MichaelRiehm). Questions, feedback, or interested in hiring me? Open an issue or reach out on LinkedIn.
