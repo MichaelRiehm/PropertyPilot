@@ -347,50 +347,99 @@ function ReportView({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
-                  <tr>
-                    {report.columns.map((c) => (
-                      <th
-                        key={c.key}
-                        scope="col"
-                        className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
-                          c.align === 'right' ? 'text-right' : 'text-left'
-                        }`}
-                      >
-                        {c.label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {report.rows.map((row, i) => {
-                    const isTotal = row.period === 'Total';
-                    return (
-                      <tr
-                        key={i}
-                        className={isTotal ? 'bg-slate-50 font-medium' : undefined}
-                      >
-                        {report.columns.map((c) => (
-                          <td
-                            key={c.key}
-                            className={`whitespace-nowrap px-4 py-3 text-sm text-slate-700 ${
-                              c.align === 'right' ? 'text-right' : ''
-                            }`}
-                          >
-                            {renderCell(row[c.key], c.format)}
-                          </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Table view (>=768px) */}
+              <div className="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white md:block">
+                <table className="min-w-full divide-y divide-slate-200">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      {report.columns.map((c) => (
+                        <th
+                          key={c.key}
+                          scope="col"
+                          className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
+                            c.align === 'right' ? 'text-right' : 'text-left'
+                          }`}
+                        >
+                          {c.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {report.rows.map((row, i) => {
+                      const isTotal = row.period === 'Total';
+                      return (
+                        <tr
+                          key={i}
+                          className={isTotal ? 'bg-slate-50 font-medium' : undefined}
+                        >
+                          {report.columns.map((c) => (
+                            <td
+                              key={c.key}
+                              className={`whitespace-nowrap px-4 py-3 text-sm text-slate-700 ${
+                                c.align === 'right' ? 'text-right' : ''
+                              }`}
+                            >
+                              {renderCell(row[c.key], c.format)}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Card view (<768px) */}
+              <ul className="space-y-3 md:hidden" aria-label={`${report.title} rows`}>
+                {report.rows.map((row, i) => (
+                  <ReportRowCard key={i} row={row} columns={report.columns} />
+                ))}
+              </ul>
+            </>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+function ReportRowCard({
+  row,
+  columns,
+}: {
+  row: Report['rows'][number];
+  columns: ReportColumn[];
+}) {
+  const isTotal = row.period === 'Total';
+  return (
+    <li
+      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${
+        isTotal ? 'bg-slate-50 font-medium' : ''
+      }`}
+    >
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+        {columns.map((c) => (
+          <div
+            key={c.key}
+            className="col-span-2 grid grid-cols-subgrid items-baseline gap-x-4"
+          >
+            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {c.label}
+            </dt>
+            <dd
+              className={`text-sm text-slate-700 ${
+                c.align === 'right' ? 'text-right' : ''
+              }`}
+            >
+              {renderCell(row[c.key], c.format) || (
+                <span className="text-slate-400">—</span>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </li>
   );
 }
