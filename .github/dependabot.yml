@@ -1,0 +1,40 @@
+# Dependabot configuration for PropertyPilot.
+#
+# Version updates for the npm workspaces at the repo root (backend + frontend),
+# the standalone e2e/ package, and GitHub Actions workflow files. Security
+# updates are handled by GitHub's automated security fixes feature (enabled
+# separately at the repo level).
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # AWS SDK bumps come in constant streams — group into one PR.
+      aws-sdk:
+        patterns:
+          - "@aws-sdk/*"
+      # Grouping dev-only patch/minor bumps keeps the queue quiet.
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - patch
+          - minor
+
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
