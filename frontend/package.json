@@ -14,7 +14,7 @@
     "@hookform/resolvers": "^5.2.2",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6",
+    "react-dom": "^19.2.7",
     "react-hook-form": "^7.81.0",
     "react-router-dom": "^7.18.1",
     "recharts": "^3.9.2",
