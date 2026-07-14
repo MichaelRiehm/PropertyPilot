@@ -14,9 +14,19 @@ updates:
       day: monday
     open-pull-requests-limit: 5
     ignore:
-      # Tailwind 4 is a rewrite with breaking config, PostCSS, and utility
-      # changes. Track majors in a manual migration issue, not a blind bump.
+      # Stack-defining packages whose major bumps require a manual migration.
+      # Patch and minor updates within the current major still flow through.
+      # Each is tracked in a dedicated migration issue.
       - dependency-name: "tailwindcss"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "prisma"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@prisma/client"
         update-types:
           - "version-update:semver-major"
     groups:
