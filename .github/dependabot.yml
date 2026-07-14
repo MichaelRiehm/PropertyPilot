@@ -13,6 +13,12 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    ignore:
+      # Tailwind 4 is a rewrite with breaking config, PostCSS, and utility
+      # changes. Track majors in a manual migration issue, not a blind bump.
+      - dependency-name: "tailwindcss"
+        update-types:
+          - "version-update:semver-major"
     groups:
       # AWS SDK bumps come in constant streams — group into one PR.
       aws-sdk:
