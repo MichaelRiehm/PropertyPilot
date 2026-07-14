@@ -114,28 +114,36 @@ PropertyPilot is built the way I'd build production software with an AI copilot 
 ### The loop
 
 ```
-GitHub Issue
-   │  (small, well-scoped feature or fix)
-   ▼
-AI agent implements on a branch, opens a PR
+GitHub Issue  (small, well-scoped feature or fix)
    │
    ▼
-CI runs (lint + build + tests)   ─┐
-AI review posts a PR comment      ├─  parallel
-                                   ─┘
+AI agent (Claude Code) implements on a branch, opens a PR
    │
    ▼
-Human (me) reviews AI's findings, edits if needed, approves
+CI on the PR (jobs run concurrently):
+   ├─ Vitest unit tests           backend + frontend
+   ├─ Playwright E2E              headless Chromium vs real dev servers
+   ├─ CodeQL security analysis    JS/TS + Actions
+   └─ GitHub Copilot code review  inline comments on the diff
    │
    ▼
-Merge to main → main is always green
+Human review: read the diff, check the tests, request changes if needed
+   │
+   ▼
+Merge to main
+   │
+   ▼
+CI auto-deploys backend + frontend to Render on push to main
 ```
 
 ### What's in this repo to support it
 
 - **[`CLAUDE.md`](CLAUDE.md)** — a codebase-context file that gives any AI agent the architecture map, conventions, and gotchas needed to work productively here. Also useful as an onboarding doc for a new human contributor.
 - **`.github/ISSUE_TEMPLATE/`** + **`.github/pull_request_template.md`** — templates that reflect this workflow, so every issue and PR carries the same shape.
-- **`.github/workflows/`** — GitHub Actions running lint, build, and the full Vitest suite on every PR. An AI-review job (optional) runs a code review pass and comments on the PR.
+- **`.github/workflows/ci.yml`** — Vitest, Playwright, build/typecheck on every PR; a `deploy` job that hits Render deploy hooks on push to `main` so `main` is always the deployed version.
+- **`.github/workflows/codeql.yml`** — CodeQL static analysis for JavaScript/TypeScript and the Actions workflow files themselves; runs on PRs, on push to `main`, and weekly on a cron.
+- **`.github/dependabot.yml`** — weekly dependency PRs grouped by ecosystem (AWS SDK, dev-deps) so upgrades surface as small, reviewable PRs instead of a quarterly panic.
+- **GitHub Copilot code review** — enabled at the repo level; every PR gets an automated review pass alongside the CI jobs above.
 - **Small, well-scoped issues** — the roadmap below is broken into issues that fit this pattern (one afternoon of work each, one PR each).
 
 ### Why this matters for hiring
