@@ -43,6 +43,10 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
     <td width="50%"><a href="docs/screenshots/properties.png"><img src="docs/screenshots/properties.png" alt="Properties list"/></a><br/><sub><b>Properties list</b> — paginated, filterable, one row per property.</sub></td>
     <td width="50%"><a href="docs/screenshots/add-property-modal.png"><img src="docs/screenshots/add-property-modal.png" alt="Add Property form"/></a><br/><sub><b>Add Property modal</b> — validated client-side and server-side with the same Zod schemas.</sub></td>
   </tr>
+  <tr>
+    <td width="50%" align="center"><a href="docs/screenshots/mobile-hamburger-menu.png"><img src="docs/screenshots/mobile-hamburger-menu.png" alt="Leases page at mobile viewport" width="280"/></a><br/><sub><b>Mobile — leases list</b> — responsive header (logo + search + hamburger) below the <code>md:</code> breakpoint.</sub></td>
+    <td width="50%" align="center"><a href="docs/screenshots/mobile-side-nav.png"><img src="docs/screenshots/mobile-side-nav.png" alt="Mobile navigation drawer open" width="280"/></a><br/><sub><b>Mobile — navigation drawer</b> — slide-in, focus-trapped, escape closes, restores focus to hamburger.</sub></td>
+  </tr>
 </table>
 
 ## Tech stack
