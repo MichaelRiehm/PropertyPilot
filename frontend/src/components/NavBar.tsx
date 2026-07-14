@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
@@ -7,20 +8,16 @@ import {
   Home,
   LineChart,
   LogOut,
+  Menu,
   Receipt,
   Users,
   Wrench,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SearchBar from './SearchBar';
+import MobileNavDrawer, { type MobileNavItem } from './MobileNavDrawer';
 
-interface NavItem {
-  to: string;
-  label: string;
-  icon: typeof Home;
-}
-
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEMS: MobileNavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: Home },
   { to: '/properties', label: 'Properties', icon: Building2 },
   { to: '/units', label: 'Units', icon: DoorOpen },
@@ -35,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
 export default function NavBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   function handleLogout() {
     logout();
@@ -44,7 +42,7 @@ export default function NavBar() {
   return (
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto max-w-7xl px-6 py-3">
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4 md:flex-wrap">
           <NavLink
             to="/dashboard"
             aria-label="Go to dashboard"
@@ -52,12 +50,13 @@ export default function NavBar() {
           >
             PropertyPilot
           </NavLink>
-          <div className="flex-1 min-w-[240px]">
+          <div className="flex-1 min-w-0 md:min-w-[240px]">
             <SearchBar />
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          {/* Desktop-only: email + log out. Mobile: same info lives in the drawer. */}
+          <div className="hidden items-center gap-3 text-sm md:flex">
             {user && (
-              <span className="hidden text-slate-500 md:inline">{user.email}</span>
+              <span className="hidden text-slate-500 lg:inline">{user.email}</span>
             )}
             <button
               type="button"
@@ -68,8 +67,21 @@ export default function NavBar() {
               <span>Log out</span>
             </button>
           </div>
+          {/* Mobile-only: hamburger opens the drawer. */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={drawerOpen}
+            className="rounded-md p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 md:hidden"
+          >
+            <Menu className="h-6 w-6" aria-hidden="true" />
+          </button>
         </div>
-        <nav className="mt-3 flex flex-wrap items-center gap-1">
+        <nav
+          className="mt-3 hidden flex-wrap items-center gap-1 md:flex"
+          aria-label="Primary"
+        >
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -88,6 +100,13 @@ export default function NavBar() {
           ))}
         </nav>
       </div>
+      <MobileNavDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onLogout={handleLogout}
+        navItems={NAV_ITEMS}
+        userEmail={user?.email}
+      />
     </header>
   );
 }

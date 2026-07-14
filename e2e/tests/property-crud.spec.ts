@@ -21,8 +21,9 @@ test('a signed-in user can add a property and see it in the list', async ({ page
   await page.getByRole('button', { name: /create account/i }).click();
   await page.waitForURL(/\/dashboard$/);
 
-  // Navigate to Properties via the top nav.
-  await page.getByRole('link', { name: /properties/i }).click();
+  // Navigate to Properties via the top nav. Use `exact` because the dashboard's
+  // "Total properties" summary card is also a link and would match a loose regex.
+  await page.getByRole('link', { name: 'Properties', exact: true }).click();
   await expect(page).toHaveURL(/\/properties$/);
 
   // Empty-state — the user has no properties yet.
