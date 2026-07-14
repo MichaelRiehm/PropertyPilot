@@ -28,9 +28,11 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 - **Four standard reports** with CSV export — Rent Roll, YTD Profit & Loss, Occupancy, Maintenance Aging (buckets by age).
 - **12-month cash flow forecast per property** — projects income from active leases forward and expenses from a trailing average, flags months where projected expenses exceed income.
 - **Cross-entity search** — one input hits properties, tenants, and transactions in parallel.
-- **Full auth stack** — JWT + bcrypt (cost 12), rate-limited auth endpoints, helmet + CORS on every response.
-- **227 unit tests** — domain classes, repositories, controllers, and the auth middleware, all with mocked Prisma.
-- **Playwright E2E** — headless Chromium covers register, sign-in, add-property, and read-a-report against the real dev servers on every PR.
+- **Lease document upload** — Cloudflare R2 (S3-compatible) with a 10 MB per-file cap, PDF-only, served through a short-lived signed URL. Legacy external URLs still pass through unchanged.
+- **Mobile-responsive navigation** — hamburger + slide-in drawer with focus trap, escape-to-close, and focus restoration under 768px.
+- **Full auth + abuse defenses** — JWT + bcrypt (cost 12), IP-based rate limits on login/register, per-user rate limits on writes and uploads keyed on the authenticated user id, helmet + CORS on every response.
+- **~250 unit tests** — domain classes, repositories, controllers, auth middleware, rate-limiter predicates. All with mocked Prisma so the suite runs in under two seconds.
+- **Playwright E2E** — headless Chromium covers register, sign-in, add-property, read-a-report, and mobile-nav drawer behavior against real dev servers on every PR.
 
 ## Screenshots
 
@@ -54,10 +56,10 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 | Layer | Choices |
 |---|---|
 | **Frontend** | React 19, TypeScript, Vite, Tailwind, React Router 7, React Hook Form, Zod, recharts, lucide-react |
-| **Backend** | Node 20, Express 5, TypeScript, Prisma 6, PostgreSQL 16, bcrypt, jsonwebtoken, Zod, helmet, cors, express-rate-limit |
-| **Testing** | Vitest (backend + frontend workspaces) — 227 unit tests, mocked Prisma, no DB needed. Playwright for browser-level E2E on every PR. |
+| **Backend** | Node 20, Express 5, TypeScript, Prisma 6, PostgreSQL 16, bcrypt, jsonwebtoken, Zod, helmet, cors, express-rate-limit, multer, @aws-sdk/client-s3 (Cloudflare R2) |
+| **Testing** | Vitest — ~250 unit tests with mocked Prisma, sub-2s suite. Playwright for browser-level E2E on every PR. |
 | **Local dev** | Docker Compose (Postgres 16), npm workspaces monorepo |
-| **Deploy** | Multi-stage Dockerfiles, Render (static site + Docker web service + managed Postgres) |
+| **Deploy** | Multi-stage Dockerfiles, Render (static site + Docker web service), Neon Postgres, Cloudflare R2 for uploads, CI-gated auto-deploy on push to `main` |
 
 ## Architecture
 
@@ -149,20 +151,15 @@ CI auto-deploys backend + frontend to Render on push to main
 - **AI-assisted review via [Claude Code](https://claude.com/claude-code)** — Claude Code (running against the [`CLAUDE.md`](CLAUDE.md) context) drafts each PR and inspects its own diff before pushing. Automated Dependabot PRs get reviewed with the same session, which is how major-bump breakage (e.g. Prisma 7's dropped schema syntax) gets caught before merge.
 - **Small, well-scoped issues** — the roadmap below is broken into issues that fit this pattern (one afternoon of work each, one PR each).
 
-### Why this matters for hiring
-
-Small teams and one-person startups can now ship what used to take 3–5 engineers, if the human at the wheel knows how to steer an AI. That skill is what this repo is designed to demonstrate: **prompting, reviewing, and integrating AI output into a maintainable codebase.**
-
 ## Roadmap
 
-Small, well-scoped items I'd tackle next. Each becomes an issue → branch → PR.
+Full backlog with acceptance criteria lives in the [Issues tab](https://github.com/MichaelRiehm/PropertyPilot/issues). The bigger items I'd tackle next:
 
-- **Multi-user / multi-property manager accounts** — currently every user is their own owner. Add a `Manager` role that can access multiple owners' portfolios (property-management-company scenario).
-- **Lease document upload** — replace the current `documentLink` URL field with a real file upload path (S3 or Render's object storage) and a signed-URL viewer.
-- **Email notifications** — rent-due reminders, ticket-status changes, lease-renewal warnings. Queue-based (BullMQ + Redis) so the API stays fast.
-- **Maintenance ticket CRUD UI** — currently ticket data exists (dashboard chips + aging report) but there's no create/edit page for owners. One CRUD page pattern already exists in five other places, so this is a mechanical add.
-- **Mobile-friendly reports** — the tables are cramped under 768px. Convert to responsive card layouts on narrow viewports.
-- **Playwright end-to-end tests** — unit coverage is solid (209 tests) but there's no browser-level regression test on the critical flows (register → add property → record rent → view P&L).
+- **Email notifications** — rent-due reminders, ticket-status changes, lease-renewal warnings. Queue-based (BullMQ + Redis + Resend) so the API stays fast.
+- **Multi-user / multi-property manager accounts** — every user is currently their own owner. Add a `Manager` role that can access multiple owners' portfolios (property-management-company scenario).
+- **Maintenance ticket CRUD UI** — ticket data already exists (dashboard chips + aging report) but there's no create/edit page. The CRUD pattern is established across five other entities, so this is a mechanical add.
+- **Mobile-friendly report tables** — the nav is already mobile-responsive (see screenshots above); the report tables still use fixed-width layouts that need to be converted to stacked cards under 768px.
+- **Framework major-version migrations** — [Tailwind 4](https://github.com/MichaelRiehm/PropertyPilot/issues/33), [TypeScript 7](https://github.com/MichaelRiehm/PropertyPilot/issues/43), [Prisma 7](https://github.com/MichaelRiehm/PropertyPilot/issues/44). Each is held for manual migration by the Dependabot ignore rules, with a scoped issue describing the migration checklist.
 
 ## License
 
