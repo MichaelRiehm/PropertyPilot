@@ -1,11 +1,14 @@
 import type { InputHTMLAttributes } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '../lib/apiClient';
 import {
   createLease,
   updateLease,
+  uploadLeaseDocument,
+  getLeaseDocumentUrl,
+  deleteLeaseDocument,
   LEASE_STATUSES,
   LEASE_STATUS_LABELS,
   type Lease,
@@ -279,10 +282,14 @@ export default function LeaseFormModal({
           label="Document link"
           optional
           type="url"
-          placeholder="https://..."
+          placeholder="https://... (or upload a PDF below)"
           {...register('documentLink')}
           error={errors.documentLink?.message}
         />
+
+        {mode === 'edit' && existing && (
+          <DocumentUploadSection lease={existing} onChanged={onSaved} />
+        )}
 
         {errors.root && (
           <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -336,3 +343,123 @@ const Field = (props: FieldProps) => {
     </div>
   );
 };
+
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+function isExternalUrl(value: string): boolean {
+  return value.startsWith('http://') || value.startsWith('https://');
+}
+
+function DocumentUploadSection({
+  lease,
+  onChanged,
+}: {
+  lease: Lease;
+  onChanged: (lease: Lease) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const hasDocument = !!lease.documentLink;
+  const isInternal = hasDocument && !isExternalUrl(lease.documentLink!);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setError('Only PDF files are supported.');
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError('File is larger than the 10MB limit.');
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      const result = await uploadLeaseDocument(lease.id, file);
+      onChanged({ ...lease, documentLink: result.lease.documentLink });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Upload failed. Try again.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleView(): Promise<void> {
+    setError(null);
+    try {
+      const res = await getLeaseDocumentUrl(lease.id);
+      window.open(res.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not open the document.');
+    }
+  }
+
+  async function handleRemove(): Promise<void> {
+    if (!confirm('Remove the attached document? This cannot be undone.')) return;
+    setError(null);
+    try {
+      await deleteLeaseDocument(lease.id);
+      onChanged({ ...lease, documentLink: null });
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not remove the document.');
+    }
+  }
+
+  return (
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+      <p className="text-sm font-medium text-slate-700">Attached document</p>
+      {isInternal ? (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-slate-600">PDF stored in secure object storage.</span>
+          <button
+            type="button"
+            onClick={handleView}
+            className="rounded-md border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          >
+            View
+          </button>
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="rounded-md border border-red-200 bg-white px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-50"
+          >
+            Remove
+          </button>
+        </div>
+      ) : hasDocument ? (
+        <p className="mt-2 text-xs text-slate-500">
+          This lease has an external URL above. Clear it before uploading a PDF here.
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-slate-500">
+            Upload a PDF (max 10MB). It will be stored in secure object storage and served via a
+            short-lived signed URL.
+          </p>
+          <div className="mt-2">
+            <label
+              htmlFor="lease-document-upload"
+              className={`inline-block rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800 ${
+                uploading ? 'opacity-50' : 'cursor-pointer'
+              }`}
+            >
+              {uploading ? 'Uploading...' : 'Upload PDF'}
+              <input
+                id="lease-document-upload"
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="sr-only"
+              />
+            </label>
+          </div>
+        </>
+      )}
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}

@@ -19,6 +19,8 @@
     "seed": "dotenv -e ../.env -- ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1086.0",
+    "@aws-sdk/s3-request-presigner": "^3.1086.0",
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
@@ -27,6 +29,7 @@
     "express-rate-limit": "^8.5.2",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -34,6 +37,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
     "@types/node": "^25.9.1",
     "dotenv-cli": "^11.0.0",
     "prisma": "^6.19.3",

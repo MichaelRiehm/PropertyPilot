@@ -1,4 +1,5 @@
-import { api } from './apiClient';
+import { api, ApiError } from './apiClient';
+import { getToken } from './storage';
 import type { PaginatedResponse, PaginationParams } from './pagination';
 
 export const LEASE_STATUSES = ['PENDING', 'ACTIVE', 'EXPIRED', 'TERMINATED'] as const;
@@ -65,4 +66,67 @@ export function updateLease(id: string, input: LeaseUpdateInput): Promise<Lease>
 
 export function deleteLease(id: string): Promise<void> {
   return api.delete<void>(`/leases/${id}`);
+}
+
+export interface LeaseDocumentUploadResponse {
+  documentKey: string;
+  documentUrl: string;
+  lease: { id: string; documentLink: string | null };
+}
+
+/**
+ * Multipart upload — apiClient's JSON helpers can't send FormData without the
+ * browser setting the multipart boundary itself, so we go through fetch()
+ * directly for this one endpoint.
+ */
+export async function uploadLeaseDocument(
+  id: string,
+  file: File,
+): Promise<LeaseDocumentUploadResponse> {
+  const form = new FormData();
+  form.append('document', file);
+
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`/api/leases/${id}/document`, {
+    method: 'POST',
+    headers,
+    body: form,
+  });
+
+  const text = await res.text();
+  let body: unknown = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      body && typeof body === 'object' && 'message' in body
+        ? String((body as Record<string, unknown>).message)
+        : `Upload failed with status ${res.status}`;
+    throw new ApiError(res.status, message, body);
+  }
+
+  return body as LeaseDocumentUploadResponse;
+}
+
+export interface LeaseDocumentViewResponse {
+  url: string;
+  external: boolean;
+  expiresInSeconds?: number;
+}
+
+export function getLeaseDocumentUrl(id: string): Promise<LeaseDocumentViewResponse> {
+  return api.get<LeaseDocumentViewResponse>(`/leases/${id}/document`);
+}
+
+export function deleteLeaseDocument(id: string): Promise<void> {
+  return api.delete<void>(`/leases/${id}/document`);
 }
