@@ -165,3 +165,40 @@ jobs:
             backend.log
             frontend.log
           retention-days: 7
+
+  deploy:
+    # Only runs on push to main (i.e. after a PR is merged). PR CI runs
+    # test + e2e only; nothing deploys until those are green AND the merge
+    # lands on main.
+    name: Deploy to Render
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      # Only one deploy at a time; a newer push cancels any in-flight deploy.
+      group: deploy-render
+      cancel-in-progress: false
+
+    steps:
+      - name: Trigger backend deploy
+        env:
+          HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "RENDER_BACKEND_DEPLOY_HOOK secret is not set; skipping."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK" | head -c 500
+          echo
+
+      - name: Trigger frontend deploy
+        env:
+          HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "RENDER_FRONTEND_DEPLOY_HOOK secret is not set; skipping."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK" | head -c 500
+          echo
