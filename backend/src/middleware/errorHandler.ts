@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError, type ZodIssue } from 'zod';
 import { Prisma } from '@prisma/client';
+import { MulterError } from 'multer';
 import { HttpError } from '../errors';
 import { DomainValidationError } from '../domain';
 
@@ -48,6 +49,21 @@ export function errorHandler(
       error: 'DomainValidationError',
       message: err.errors[0] ?? err.message,
       errors: err.errors,
+    });
+    return;
+  }
+
+  if (err instanceof MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      res.status(413).json({
+        error: 'PayloadTooLarge',
+        message: 'File is larger than the 10MB limit',
+      });
+      return;
+    }
+    res.status(400).json({
+      error: 'UploadError',
+      message: err.message,
     });
     return;
   }

@@ -13,6 +13,7 @@ import { PropertyController } from '../controllers/propertyController';
 import { UnitController } from '../controllers/unitController';
 import { TenantController } from '../controllers/tenantController';
 import { LeaseController } from '../controllers/leaseController';
+import { LeaseDocumentController } from '../controllers/leaseDocumentController';
 import { TransactionController } from '../controllers/transactionController';
 import { MaintenanceTicketController } from '../controllers/maintenanceTicketController';
 import { AuthController } from '../controllers/authController';
@@ -33,6 +34,7 @@ import { createReportsRouter } from './reports';
 import { createForecastRouter } from './forecast';
 import { createDashboardRouter } from './dashboard';
 import { AuthService } from '../services/authService';
+import { StorageService, storageConfigFromEnv } from '../services/storageService';
 import { createAuthMiddleware } from '../middleware/auth';
 
 export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router {
@@ -51,6 +53,15 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   const unitController = new UnitController(unitRepo, propertyRepo);
   const tenantController = new TenantController(tenantRepo);
   const leaseController = new LeaseController(leaseRepo, unitRepo, tenantRepo);
+  const storageConfig = storageConfigFromEnv();
+  const leaseDocumentController = storageConfig
+    ? new LeaseDocumentController(leaseRepo, new StorageService(storageConfig))
+    : null;
+  if (!storageConfig) {
+    console.warn(
+      '[propertypilot-backend] R2_* env vars missing — lease document upload endpoints disabled.',
+    );
+  }
   const transactionController = new TransactionController(
     transactionRepo,
     propertyRepo,
@@ -99,7 +110,7 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
   router.use('/properties', createPropertyRouter(propertyController));
   router.use('/units', createUnitRouter(unitController));
   router.use('/tenants', createTenantRouter(tenantController));
-  router.use('/leases', createLeaseRouter(leaseController));
+  router.use('/leases', createLeaseRouter(leaseController, leaseDocumentController));
   router.use('/transactions', createTransactionRouter(transactionController));
   router.use('/search', createSearchRouter(searchController));
   router.use('/reports', createReportsRouter(reportsController));
