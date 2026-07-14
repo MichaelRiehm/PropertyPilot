@@ -36,6 +36,7 @@ import { createDashboardRouter } from './dashboard';
 import { AuthService } from '../services/authService';
 import { StorageService, storageConfigFromEnv } from '../services/storageService';
 import { createAuthMiddleware } from '../middleware/auth';
+import { writeRateLimiter } from '../middleware/rateLimiter';
 
 export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router {
   const propertyRepo = new PropertyRepository(prisma);
@@ -107,6 +108,8 @@ export function createApiRouter(prisma: PrismaClient, jwtSecret: string): Router
 
   // Everything below requires a valid JWT
   router.use(authMiddleware);
+  // Per-user cap on mutating requests; the limiter skips itself on GET/HEAD/OPTIONS.
+  router.use(writeRateLimiter);
   router.use('/properties', createPropertyRouter(propertyController));
   router.use('/units', createUnitRouter(unitController));
   router.use('/tenants', createTenantRouter(tenantController));
