@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { LeaseController } from '../controllers/leaseController';
 import { LeaseDocumentController } from '../controllers/leaseDocumentController';
+import { uploadRateLimiter } from '../middleware/rateLimiter';
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
@@ -23,7 +24,12 @@ export function createLeaseRouter(
   router.delete('/:id', controller.remove);
 
   if (documentController) {
-    router.post('/:id/document', upload.single('document'), documentController.upload);
+    router.post(
+      '/:id/document',
+      uploadRateLimiter,
+      upload.single('document'),
+      documentController.upload,
+    );
     router.get('/:id/document', documentController.getViewUrl);
     router.delete('/:id/document', documentController.remove);
   }
