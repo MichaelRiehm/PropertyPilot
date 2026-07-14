@@ -1,23 +1,23 @@
 flowchart LR
-    %% PropertyPilot system architecture diagram (Task 3.C.1).
-    %% Three runtime tiers (browser, backend API, database) with the internal
-    %% backend layering and the Render hosting overlay.
+    %% PropertyPilot — system architecture.
+    %% Three runtime tiers (browser, backend API, database) plus the object
+    %% storage side-car and the deployed hosting overlay.
 
-    subgraph Browser["Browser - React 18 + Vite + Tailwind"]
+    subgraph Browser["Browser — React 19 + Vite + Tailwind"]
         direction TB
-        Pages["Pages: Dashboard, Properties, Units, Tenants,<br/>Leases, Transactions, Reports, Forecast, Search"]
-        Components["Reusable components:<br/>Forms, Modals, Pagination, NavBar"]
+        Pages["Pages: Dashboard, Properties, Units, Tenants,<br/>Leases, Transactions, Maintenance, Reports,<br/>Forecast, Search"]
+        Components["Reusable components:<br/>Forms, Modals, Pagination,<br/>NavBar + MobileNavDrawer"]
         ClientSchemas["Zod schemas (client-side validation)"]
-        ApiClient["lib/apiClient.ts<br/>fetch wrapper + JWT header"]
+        ApiClient["lib/apiClient.ts<br/>fetch wrapper + JWT header + 429/Retry-After"]
         Pages --> Components
         Pages --> ClientSchemas
         Pages --> ApiClient
     end
 
-    subgraph Backend["Backend - Node 20 + Express 5 + TypeScript"]
+    subgraph Backend["Backend — Node 20 + Express 5 + TypeScript"]
         direction TB
-        Helmet["helmet + CORS + express-rate-limit"]
-        Routes["Routes:<br/>/api/auth, /api/properties, /api/units,<br/>/api/tenants, /api/leases, /api/transactions,<br/>/api/dashboard, /api/search,<br/>/api/reports, /api/forecast"]
+        Guards["helmet + CORS + IP rate limit (auth)<br/>+ per-user rate limits (writes, uploads)"]
+        Routes["Routes:<br/>/api/auth, /api/properties, /api/units,<br/>/api/tenants, /api/leases (+ /:id/document),<br/>/api/transactions, /api/maintenance-tickets,<br/>/api/dashboard, /api/search,<br/>/api/reports, /api/forecast"]
         AuthMW["authMiddleware<br/>JWT verify, attaches req.user"]
         ServerSchemas["Zod schemas<br/>server-side validation, source of truth"]
         Controllers["Controllers (one per resource)"]
@@ -26,16 +26,18 @@ flowchart LR
         Repos["Repositories<br/>owner-scoped Prisma access"]
         Domain["Domain classes:<br/>Property, Unit, Tenant, Lease,<br/>Transaction, MaintenanceTicket<br/>+ abstract Entity + Reportable"]
         Mappers["mappers.ts<br/>Prisma row to domain instance"]
+        Storage["StorageService<br/>S3-compatible wrapper (put, delete,<br/>15-min signed URL)"]
         Errors["errorHandler<br/>maps ZodError, NotFoundError,<br/>HttpError, Prisma errors"]
         PrismaClient["Prisma Client"]
 
-        Helmet --> Routes
+        Guards --> Routes
         Routes --> AuthMW
         AuthMW --> Controllers
         Controllers --> ServerSchemas
         Controllers --> Repos
         Controllers --> Reports
         Controllers --> Forecast
+        Controllers --> Storage
         Reports --> Repos
         Forecast --> Repos
         Repos --> Mappers
@@ -45,26 +47,35 @@ flowchart LR
         Controllers --> Errors
     end
 
-    subgraph Database["PostgreSQL 16"]
+    subgraph Database["Neon Postgres 16 (autoscaling compute)"]
         direction TB
         Tables["users, properties, units, tenants,<br/>leases, transactions, maintenance_tickets"]
         Indexes["B-tree indexes on FK columns<br/>+ composite indexes for list filters"]
     end
 
-    ApiClient -->|HTTPS Bearer JWT| Helmet
-    PrismaClient -->|TLS connection string| Tables
-
-    subgraph Render["Render - managed cloud hosting"]
+    subgraph ObjectStorage["Cloudflare R2 (S3-compatible)"]
         direction TB
-        StaticSite["Static Site (frontend/dist)"]
-        WebService["Web Service - Node, runs backend"]
-        ManagedPG["Managed PostgreSQL"]
+        Bucket["Bucket: propertypilot-leases<br/>Keys: leases/&lt;id&gt;/document.pdf"]
+    end
+
+    ApiClient -->|HTTPS Bearer JWT| Guards
+    PrismaClient -->|TLS connection string| Tables
+    Storage -->|PutObject / GetSignedUrl / DeleteObject| Bucket
+
+    subgraph Hosting["Deployment — CI-gated auto-deploy on push to main"]
+        direction TB
+        StaticSite["Render Static Site (frontend/dist)"]
+        WebService["Render Web Service (Node, runs backend)"]
+        GHActions["GitHub Actions: Vitest + Playwright + CodeQL<br/>+ deploy job hitting Render deploy hooks"]
     end
     Browser -.served from.-> StaticSite
     Backend -.runs in.-> WebService
-    Database -.hosted as.-> ManagedPG
+    Hosting -.triggers.-> WebService
+    Hosting -.triggers.-> StaticSite
 
     classDef tier fill:#f1f5f9,stroke:#0f172a,stroke-width:1px;
+    classDef external fill:#e0f2fe,stroke:#075985,stroke-width:1px;
     classDef hosting fill:#fef3c7,stroke:#92400e,stroke-width:1px;
     class Browser,Backend,Database tier;
-    class Render hosting;
+    class ObjectStorage external;
+    class Hosting hosting;

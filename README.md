@@ -65,10 +65,90 @@ Built by [Michael Riehm](https://github.com/MichaelRiehm) as a portfolio project
 
 Three tiers, layered backend, one domain model that carries the OO story:
 
-![Architecture](docs/diagrams/architecture-diagram.png)
+```mermaid
+flowchart LR
+    subgraph Browser["Browser — React 19 + Vite + Tailwind"]
+        direction TB
+        Pages["Pages: Dashboard, Properties, Units, Tenants,<br/>Leases, Transactions, Maintenance, Reports,<br/>Forecast, Search"]
+        Components["Reusable components:<br/>Forms, Modals, Pagination,<br/>NavBar + MobileNavDrawer"]
+        ClientSchemas["Zod schemas (client-side validation)"]
+        ApiClient["lib/apiClient.ts<br/>fetch wrapper + JWT header + 429/Retry-After"]
+        Pages --> Components
+        Pages --> ClientSchemas
+        Pages --> ApiClient
+    end
+
+    subgraph Backend["Backend — Node 20 + Express 5 + TypeScript"]
+        direction TB
+        Guards["helmet + CORS + IP rate limit (auth)<br/>+ per-user rate limits (writes, uploads)"]
+        Routes["Routes:<br/>/api/auth, /api/properties, /api/units,<br/>/api/tenants, /api/leases (+ /:id/document),<br/>/api/transactions, /api/maintenance-tickets,<br/>/api/dashboard, /api/search,<br/>/api/reports, /api/forecast"]
+        AuthMW["authMiddleware<br/>JWT verify, attaches req.user"]
+        ServerSchemas["Zod schemas<br/>server-side validation, source of truth"]
+        Controllers["Controllers (one per resource)"]
+        Reports["Reports:<br/>RentRoll, P and L, Occupancy, Aging"]
+        Forecast["CashFlowForecaster"]
+        Repos["Repositories<br/>owner-scoped Prisma access"]
+        Domain["Domain classes:<br/>Property, Unit, Tenant, Lease,<br/>Transaction, MaintenanceTicket<br/>+ abstract Entity + Reportable"]
+        Mappers["mappers.ts<br/>Prisma row to domain instance"]
+        Storage["StorageService<br/>S3-compatible wrapper (put, delete,<br/>15-min signed URL)"]
+        Errors["errorHandler<br/>maps ZodError, NotFoundError,<br/>HttpError, Prisma errors"]
+        PrismaClient["Prisma Client"]
+
+        Guards --> Routes
+        Routes --> AuthMW
+        AuthMW --> Controllers
+        Controllers --> ServerSchemas
+        Controllers --> Repos
+        Controllers --> Reports
+        Controllers --> Forecast
+        Controllers --> Storage
+        Reports --> Repos
+        Forecast --> Repos
+        Repos --> Mappers
+        Repos --> Domain
+        Repos --> PrismaClient
+        Mappers --> Domain
+        Controllers --> Errors
+    end
+
+    subgraph Database["Neon Postgres 16 (autoscaling compute)"]
+        direction TB
+        Tables["users, properties, units, tenants,<br/>leases, transactions, maintenance_tickets"]
+        Indexes["B-tree indexes on FK columns<br/>+ composite indexes for list filters"]
+    end
+
+    subgraph ObjectStorage["Cloudflare R2 (S3-compatible)"]
+        direction TB
+        Bucket["Bucket: propertypilot-leases<br/>Keys: leases/&lt;id&gt;/document.pdf"]
+    end
+
+    ApiClient -->|HTTPS Bearer JWT| Guards
+    PrismaClient -->|TLS connection string| Tables
+    Storage -->|PutObject / GetSignedUrl / DeleteObject| Bucket
+
+    subgraph Hosting["Deployment — CI-gated auto-deploy on push to main"]
+        direction TB
+        StaticSite["Render Static Site (frontend/dist)"]
+        WebService["Render Web Service (Node, runs backend)"]
+        GHActions["GitHub Actions: Vitest + Playwright + CodeQL<br/>+ deploy job hitting Render deploy hooks"]
+    end
+    Browser -.served from.-> StaticSite
+    Backend -.runs in.-> WebService
+    Hosting -.triggers.-> WebService
+    Hosting -.triggers.-> StaticSite
+
+    classDef tier fill:#f1f5f9,stroke:#0f172a,stroke-width:1px;
+    classDef external fill:#e0f2fe,stroke:#075985,stroke-width:1px;
+    classDef hosting fill:#fef3c7,stroke:#92400e,stroke-width:1px;
+    class Browser,Backend,Database tier;
+    class ObjectStorage external;
+    class Hosting hosting;
+```
+
+*Diagram source: [`docs/diagrams/architecture-diagram.mmd`](docs/diagrams/architecture-diagram.mmd).*
 
 - **Layered backend.** `routes → auth middleware → controllers → repositories → Prisma`. Controllers never touch Prisma; repositories are the only layer that does.
-- **Domain classes on top of Prisma.** An abstract `Entity` base with concrete `Property`, `Unit`, `Tenant`, `Lease`, `Transaction`, `MaintenanceTicket` classes. Each implements a polymorphic `validate()` and satisfies a `Reportable` interface. Prisma stays for type-safe SQL; the domain classes hold the behavior. See the [class diagram](docs/diagrams/class-diagram.png).
+- **Domain classes on top of Prisma.** An abstract `Entity` base with concrete `Property`, `Unit`, `Tenant`, `Lease`, `Transaction`, `MaintenanceTicket` classes. Each implements a polymorphic `validate()` and satisfies a `Reportable` interface. Prisma stays for type-safe SQL; the domain classes hold the behavior. See the [class diagram](docs/diagrams/class-diagram.md).
 - **Same Zod schemas both sides.** The frontend gets instant field validation from the same Zod definitions the server treats as authoritative. Client-side is for UX, server-side is the source of truth.
 - **Owner-scoped queries everywhere.** Repositories take `ownerId` and bake it into every `where` clause (direct or via join). The test suite pins that contract for every repository so a bad refactor fails immediately.
 
@@ -157,7 +237,6 @@ Full backlog with acceptance criteria lives in the [Issues tab](https://github.c
 
 - **Email notifications** — rent-due reminders, ticket-status changes, lease-renewal warnings. Queue-based (BullMQ + Redis + Resend) so the API stays fast.
 - **Multi-user / multi-property manager accounts** — every user is currently their own owner. Add a `Manager` role that can access multiple owners' portfolios (property-management-company scenario).
-- **Maintenance ticket CRUD UI** — ticket data already exists (dashboard chips + aging report) but there's no create/edit page. The CRUD pattern is established across five other entities, so this is a mechanical add.
 - **Mobile-friendly report tables** — the nav is already mobile-responsive (see screenshots above); the report tables still use fixed-width layouts that need to be converted to stacked cards under 768px.
 - **Framework major-version migrations** — [Tailwind 4](https://github.com/MichaelRiehm/PropertyPilot/issues/33), [TypeScript 7](https://github.com/MichaelRiehm/PropertyPilot/issues/43), [Prisma 7](https://github.com/MichaelRiehm/PropertyPilot/issues/44). Each is held for manual migration by the Dependabot ignore rules, with a scoped issue describing the migration checklist.
 
