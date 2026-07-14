@@ -282,13 +282,24 @@ export default function LeaseFormModal({
           label="Document link"
           optional
           type="url"
-          placeholder="https://... (or upload a PDF below)"
+          placeholder={mode === 'edit' ? 'https://... (or upload a PDF below)' : 'https://...'}
           {...register('documentLink')}
           error={errors.documentLink?.message}
         />
 
         {mode === 'edit' && existing && (
           <DocumentUploadSection lease={existing} onChanged={onSaved} />
+        )}
+
+        {mode === 'create' && (
+          <div className="rounded-md border border-dashed border-slate-200 bg-slate-50/60 p-3">
+            <p className="text-sm font-medium text-slate-600">Attach a PDF</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Create the lease first, then re-open it in edit mode to upload a PDF (max
+              10MB). It will be stored in secure object storage and served via a short-lived
+              signed URL.
+            </p>
+          </div>
         )}
 
         {errors.root && (
