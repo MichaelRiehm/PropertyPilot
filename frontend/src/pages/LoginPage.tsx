@@ -41,7 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-xs">
+      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
           <p className="mt-1 text-sm text-slate-500">Sign in to PropertyPilot</p>
@@ -57,7 +57,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               {...register('email')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -73,7 +73,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               {...register('password')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>

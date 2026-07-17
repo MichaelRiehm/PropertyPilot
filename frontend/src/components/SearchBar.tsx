@@ -26,7 +26,7 @@ export default function SearchBar() {
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search properties, tenants, transactions"
         aria-label="Search"
-        className="w-full max-w-md rounded-md border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm shadow-xs placeholder:text-slate-400 focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+        className="w-full max-w-md rounded-md border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm shadow-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
       />
     </form>
   );
