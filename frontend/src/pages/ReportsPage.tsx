@@ -273,7 +273,7 @@ function ReportView({
                 id="report-property"
                 value={propertyId}
                 onChange={(e) => onPropertyChange(e.target.value)}
-                className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+                className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
               >
                 <option value="">All properties</option>
                 {properties.map((p) => (
@@ -415,7 +415,7 @@ function ReportRowCard({
   const isTotal = row.period === 'Total';
   return (
     <li
-      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-xs ${
+      className={`rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${
         isTotal ? 'bg-slate-50 font-medium' : ''
       }`}
     >
