@@ -32,5 +32,9 @@
     "typescript": "^6.0.3",
     "vite": "^8.1.4",
     "vitest": "^4.1.10"
+  },
+  "optionalDependencies": {
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.3.3",
+    "@tailwindcss/oxide-linux-x64-musl": "^4.3.3"
   }
 }
