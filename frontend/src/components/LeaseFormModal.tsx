@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ApiError } from '../lib/apiClient';
 import {
+  classifyLeaseDocument,
   createLease,
   updateLease,
   uploadLeaseDocument,
@@ -357,10 +358,6 @@ const Field = (props: FieldProps) => {
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-function isExternalUrl(value: string): boolean {
-  return value.startsWith('http://') || value.startsWith('https://');
-}
-
 function DocumentUploadSection({
   lease,
   onChanged,
@@ -370,8 +367,9 @@ function DocumentUploadSection({
 }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const hasDocument = !!lease.documentLink;
-  const isInternal = hasDocument && !isExternalUrl(lease.documentLink!);
+  const kind = classifyLeaseDocument(lease);
+  const hasDocument = kind !== 'none';
+  const isInternal = kind === 'internal';
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const file = e.target.files?.[0];

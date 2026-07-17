@@ -6,12 +6,16 @@ import { listProperties, type Property } from '../lib/properties';
 import { listUnits, type Unit } from '../lib/units';
 import { listTenants, type Tenant } from '../lib/tenants';
 import {
+  classifyLeaseDocument,
   deleteLease,
+  getLeaseDocumentUrl,
   listLeases,
   LEASE_STATUS_LABELS,
   type Lease,
+  type LeaseDocumentKind,
   type LeaseStatus,
 } from '../lib/leases';
+import { ApiError } from '../lib/apiClient';
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination';
 import LeaseFormModal from '../components/LeaseFormModal';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -97,6 +101,17 @@ export default function LeasesPage() {
       setPage(page - 1);
     } else {
       void leasesQuery.refresh();
+    }
+  }
+
+  async function handleViewDocument(leaseId: string): Promise<void> {
+    try {
+      const res = await getLeaseDocumentUrl(leaseId);
+      window.open(res.url, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : 'Could not open the document.';
+      alert(message);
     }
   }
 
@@ -191,6 +206,7 @@ export default function LeasesPage() {
                 <Th align="right">Rent</Th>
                 <Th align="right">Deposit</Th>
                 <Th>Status</Th>
+                <Th align="center">Document</Th>
                 <Th align="right">Actions</Th>
               </tr>
             </thead>
@@ -233,6 +249,12 @@ export default function LeasesPage() {
                       >
                         {LEASE_STATUS_LABELS[lease.status]}
                       </span>
+                    </Td>
+                    <Td align="center">
+                      <DocumentIndicator
+                        kind={classifyLeaseDocument(lease)}
+                        onView={() => void handleViewDocument(lease.id)}
+                      />
                     </Td>
                     <Td align="right">
                       <div className="inline-flex items-center gap-1">
@@ -295,19 +317,57 @@ export default function LeasesPage() {
   );
 }
 
-const Th = ({ children, align }: { children: ReactNode; align?: 'right' }) => (
+type CellAlign = 'right' | 'center';
+
+const alignClass = (align?: CellAlign): string => {
+  if (align === 'right') return 'text-right';
+  if (align === 'center') return 'text-center';
+  return 'text-left';
+};
+
+const Th = ({ children, align }: { children: ReactNode; align?: CellAlign }) => (
   <th
     scope="col"
-    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
-      align === 'right' ? 'text-right' : 'text-left'
-    }`}
+    className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${alignClass(align)}`}
   >
     {children}
   </th>
 );
 
-const Td = ({ children, align }: { children: ReactNode; align?: 'right' }) => (
-  <td className={`whitespace-nowrap px-4 py-3 text-sm ${align === 'right' ? 'text-right' : ''}`}>
+const Td = ({ children, align }: { children: ReactNode; align?: CellAlign }) => (
+  <td className={`whitespace-nowrap px-4 py-3 text-sm ${align ? alignClass(align) : ''}`}>
     {children}
   </td>
 );
+
+const DocumentIndicator = ({
+  kind,
+  onView,
+}: {
+  kind: LeaseDocumentKind;
+  onView: () => void;
+}) => {
+  if (kind === 'none') {
+    return (
+      <span className="text-slate-300" aria-label="No document attached">
+        —
+      </span>
+    );
+  }
+  const isInternal = kind === 'internal';
+  const label = isInternal
+    ? 'PDF stored in secure storage — click to view'
+    : 'External document link — click to open';
+  const iconClass = isInternal ? 'text-slate-700' : 'text-sky-600';
+  return (
+    <button
+      type="button"
+      onClick={onView}
+      title={label}
+      aria-label={label}
+      className={`inline-flex items-center justify-center rounded-md p-1.5 hover:bg-slate-100 ${iconClass}`}
+    >
+      <FileText className="h-4 w-4" aria-hidden="true" />
+    </button>
+  );
+};
