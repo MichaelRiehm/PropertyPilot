@@ -130,3 +130,19 @@ export function getLeaseDocumentUrl(id: string): Promise<LeaseDocumentViewRespon
 export function deleteLeaseDocument(id: string): Promise<void> {
   return api.delete<void>(`/leases/${id}/document`);
 }
+
+export type LeaseDocumentKind = 'internal' | 'external' | 'none';
+
+/**
+ * Classify a lease's document attachment. Internal documents live in R2 under
+ * an opaque object key; external documents are pre-existing http(s) URLs that
+ * were pasted in before the upload feature existed and still pass through the
+ * documentLink field unchanged.
+ */
+export function classifyLeaseDocument(lease: Pick<Lease, 'documentLink'>): LeaseDocumentKind {
+  if (!lease.documentLink) return 'none';
+  if (lease.documentLink.startsWith('http://') || lease.documentLink.startsWith('https://')) {
+    return 'external';
+  }
+  return 'internal';
+}
