@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import type { Request } from 'express';
 
 // Brute-force protection for login and registration. Keeping the limit tight
@@ -22,8 +22,14 @@ export const authRateLimiter = rateLimit({
 // Per-user (authenticated) key for the write and upload limiters below.
 // Mounted after authMiddleware so req.user is guaranteed populated; the IP
 // fallback exists only so a misconfiguration fails closed rather than open.
+//
+// The fallback goes through express-rate-limit's ipKeyGenerator helper so
+// IPv6 addresses collapse to their /64 subnet (the smallest meaningful unit
+// of client identity in v6). Without this, two v6 clients from the same
+// physical machine could bypass the per-IP limit by picking different
+// interface identifiers.
 export function userIdKey(req: Request): string {
-  return req.user?.id ?? `ip:${req.ip ?? 'unknown'}`;
+  return req.user?.id ?? `ip:${ipKeyGenerator(req.ip ?? 'unknown')}`;
 }
 
 // Predicate for the write limiter: skip reads (they're cheap and not a vector),

@@ -22,9 +22,28 @@ describe('userIdKey', () => {
     expect(userIdKey(alice)).not.toBe(userIdKey(bob));
   });
 
-  it('falls back to an IP-prefixed key if req.user is missing (misconfiguration guard)', () => {
+  it('falls back to an ip-prefixed key when req.user is missing (misconfiguration guard)', () => {
+    const req = makeReq({ ip: '198.51.100.42' });
+    expect(userIdKey(req)).toMatch(/^ip:/);
+  });
+
+  it('preserves the IPv4 address unchanged in the fallback key', () => {
     const req = makeReq({ ip: '198.51.100.42' });
     expect(userIdKey(req)).toBe('ip:198.51.100.42');
+  });
+
+  it('collapses two IPv6 addresses in the same /64 subnet to the same fallback key', () => {
+    // Both addresses fall under 2001:db8::/64 — same physical client under
+    // typical IPv6 allocation, so the rate limiter must treat them as one.
+    const client1 = makeReq({ ip: '2001:db8::1' });
+    const client2 = makeReq({ ip: '2001:db8::abcd:beef:1234:5678' });
+    expect(userIdKey(client1)).toBe(userIdKey(client2));
+  });
+
+  it('gives distinct fallback keys to IPv6 addresses in different /64 subnets', () => {
+    const client1 = makeReq({ ip: '2001:db8::1' });
+    const client2 = makeReq({ ip: '2001:db8:1::1' });
+    expect(userIdKey(client1)).not.toBe(userIdKey(client2));
   });
 
   it('marks the IP fallback distinctly so it cannot collide with a real user id', () => {
