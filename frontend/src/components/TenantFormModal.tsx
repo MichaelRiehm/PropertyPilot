@@ -144,7 +144,7 @@ const Field = (props: FieldProps) => {
       <input
         id={id}
         {...rest}
-        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>

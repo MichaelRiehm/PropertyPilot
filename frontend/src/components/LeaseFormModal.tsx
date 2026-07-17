@@ -150,7 +150,7 @@ export default function LeaseFormModal({
               id="unitId"
               disabled={mode === 'edit'}
               {...register('unitId')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               {units.length === 0 && <option value="">No units available</option>}
               {properties.map((property) => {
@@ -196,7 +196,7 @@ export default function LeaseFormModal({
               id="tenantId"
               disabled={mode === 'edit'}
               {...register('tenantId')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               {tenants.length === 0 && <option value="">No tenants available</option>}
               {tenants.map((tenant) => (
@@ -264,7 +264,7 @@ export default function LeaseFormModal({
           <select
             id="status"
             {...register('status')}
-            className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+            className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
           >
             {LEASE_STATUSES.map((value) => (
               <option key={value} value={value}>
@@ -348,7 +348,7 @@ const Field = (props: FieldProps) => {
       <input
         id={id}
         {...rest}
-        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
