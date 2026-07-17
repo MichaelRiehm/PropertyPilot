@@ -163,7 +163,7 @@ export default function TransactionFormModal({
               id="propertyId"
               disabled={lockedFields}
               {...register('propertyId')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               {properties.length === 0 && <option value="">No properties</option>}
               {properties.map((p) => (
@@ -185,7 +185,7 @@ export default function TransactionFormModal({
               id="type"
               disabled={lockedFields}
               {...register('type')}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               {TRANSACTION_TYPES.map((value) => (
                 <option key={value} value={value}>
@@ -210,7 +210,7 @@ export default function TransactionFormModal({
               {...register('unitId', {
                 setValueAs: (value) => (value === '' ? null : value),
               })}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               <option value="">—</option>
               {unitsForProperty.map((u) => (
@@ -234,7 +234,7 @@ export default function TransactionFormModal({
               {...register('leaseId', {
                 setValueAs: (value) => (value === '' ? null : value),
               })}
-              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
             >
               <option value="">—</option>
               {leasesForProperty.map((lease) => {
@@ -338,7 +338,7 @@ const Field = (props: FieldProps) => {
       <input
         id={id}
         {...rest}
-        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
+        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900 disabled:bg-slate-50 disabled:text-slate-500"
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>

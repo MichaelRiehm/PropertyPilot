@@ -113,7 +113,7 @@ export default function MobileNavDrawer({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+            className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-slate-900"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" aria-hidden="true" />
